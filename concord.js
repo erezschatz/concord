@@ -1,4 +1,6 @@
+// Copyright 2020-2021, Dave Winer
 // Copyright 2013, Small Picture, Inc.
+
 $(function () {
 	if($.fn.tooltip !== undefined){
 		$("a[rel=tooltip]").tooltip({
@@ -6,7 +8,7 @@ $(function () {
 			})
 		}
 	})
-$(function () { 
+$(function () {
 	if($.fn.popover !== undefined){
 		$("a[rel=popover]").on("mouseenter mouseleave", function(){$(this).popover("toggle")})
 		}
@@ -20,7 +22,7 @@ if (!Array.prototype.indexOf) {
 		}
 	}
 var concord = {
-	version: "2.49",
+	version: "3.0.5",
 	mobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent),
 	ready: false,
 	handleEvents: true,
@@ -110,7 +112,11 @@ var concordEnvironment = {
 	"version" : concord.version
 	};
 var concordClipboard = undefined;
+var flConcordScrollEnabled = true; //6/24/14 by DW
+var ctPixelsAboveOutlineArea = 0; //6/24/14 by DW
+
 jQuery.fn.reverse = [].reverse;
+
 //Constants
 	var nil = null;
 	var infinity = Number.MAX_VALUE;
@@ -135,6 +141,171 @@ var ConcordUtil = {
 			return XML_CHAR_MAP[ch];
 			});
 		return escaped;
+		},
+	stringMid: function (s, ix, len) { //1/27/20 by DW
+		return (s.substr (ix-1, len));
+		},
+	stringDelete: function (s, ix, ct) { //1/27/20 by DW
+		var start = ix - 1;
+		var end = (ix + ct) - 1;
+		var s1 = s.substr (0, start);
+		var s2 = s.substr (end);
+		return (s1 + s2);
+		},
+	endsWith: function (s, possibleEnding, flUnicase) { //1/27/20 by DW
+		function stringLower (s) {
+			return (s.toLowerCase ());
+			}
+		if ((s === undefined) || (s.length == 0)) { 
+			return (false);
+			}
+		var ixstring = s.length - 1;
+		if (flUnicase === undefined) {
+			flUnicase = true;
+			}
+		if (flUnicase) {
+			for (var i = possibleEnding.length - 1; i >= 0; i--) {
+				if (stringLower (s [ixstring--]) != stringLower (possibleEnding [i])) {
+					return (false);
+					}
+				}
+			}
+		else {
+			for (var i = possibleEnding.length - 1; i >= 0; i--) {
+				if (s [ixstring--] != possibleEnding [i]) {
+					return (false);
+					}
+				}
+			}
+		return (true);
+		},
+	speakerBeep: function () { //1/27/20 by DW
+		try {
+			speakerBeep ();
+			}
+		catch (err) {
+			console.log ("beep");
+			}
+		},
+	getIconHtml: function (iconName) { //1/30/20 by DW 
+		var faClass = "far";
+		if (iconName == "caret-right") {
+			faClass = "fas";
+			}
+		if (iconName == "twitter") {
+			faClass = "fab";
+			}
+		if (iconName == "markdown") {
+			faClass = "fab";
+			}
+		return ("<i class=\"node-icon " + faClass + " fa-"+ iconName +"\"></i>");
+		},
+	getKeystroke: function (event) { //2/12/20 by DW
+		var concordKeystrokes = {
+			"backspace": "backspace", 
+			"tab": "tab",
+			"return": "return",
+			"delete": "delete",
+			"uparrow": "cursor-up",
+			"downarrow": "cursor-down",
+			"leftarrow": "cursor-left",
+			"rightarrow": "cursor-right",
+			
+			"meta-A": "select-all",
+			"meta-B": "bolden",
+			"meta-C": "copy",
+			"meta-D": "reorg-down",
+			"meta-F": "find", //9/19/13 by DW
+			"meta-I": "italicize",
+			"meta-L": "reorg-left",
+			"meta-R": "reorg-right",
+			"meta-U": "reorg-up",
+			"meta-V": "paste",
+			"meta-X": "cut",
+			"meta-Z": "undo",
+			
+			"meta-[": "promote",
+			"meta-]": "demote",
+			
+			"meta-\\": "toggle-comment",
+			"meta-/": "run-selection",
+			"meta-`": "toggle-render",
+			"meta-,": "toggle-expand"
+			}
+		function concordMetaizeKeystroke (event) { //9/17/13 by DW
+			var flmeta = event.metaKey || event.ctrlKey;
+			function checkspecials (ch) {
+				switch (ch) {
+					case 8:
+						return ("backspace");
+					case 9:
+						return ("tab");
+					case 13:
+						return ("return");
+					case 33: 
+						return ("pageup");
+					case 34: 
+						return ("pagedown");
+					case 35: 
+						return ("end");
+					case 36: 
+						return ("home");
+					case 37:
+						return ("leftarrow");
+					case 38:
+						return ("uparrow");
+					case 39:
+						return ("rightarrow");
+					case 40:
+						return ("downarrow");
+					case 46:
+						return ("delete");
+					case 188:
+						return (",");
+					case 190:
+						return (".");
+					case 191:
+						return ("/");
+					case 192:
+						return ("`");
+					case 219:
+						return ("[");
+					case 220:
+						return ("\\");
+					case 221:
+						return ("]");
+					}
+				return (ch);
+				}
+			var ch = event.which;
+			if ((ch >= 65) && (ch <= 90)) { //meta-A through meta-Z
+				if (flmeta) {
+					return ("meta-" + String.fromCharCode (ch));
+					}
+				}
+			else {
+				if ((ch >= 48) && (ch <= 57)) { //meta-0 through meta-9 -- 4/20/21 by DW
+					if (flmeta) {
+						return ("meta-" + String.fromCharCode (ch));
+						}
+					}
+				}
+			var s = checkspecials (ch);
+			if (flmeta) {
+				return ("meta-" + s);
+				}
+			else {
+				return (s);
+				}
+			}
+		var s = concordMetaizeKeystroke (event);
+		if (concordKeystrokes [s] !== undefined) {
+			var val = concordKeystrokes [s];
+			if (val.length > 0) { //2/23/14 by DW
+				return (val);
+				}
+			}
+		return (s);
 		}
 	};
 function ConcordOutline(container, options) {
@@ -416,7 +587,7 @@ function ConcordEditor(root, concordInstance) {
 		node.addClass("concord-node");
 		var wrapper = $("<div class='concord-wrapper'></div>");
 		var iconName="caret-right";
-		var icon = "<i"+" class=\"node-icon icon-"+ iconName +"\"><"+"/i>";
+		var icon = ConcordUtil.getIconHtml (iconName);
 		wrapper.append(icon);
 		wrapper.addClass("type-icon");
 		var text = $("<div class='concord-text' contenteditable='true'></div>");
@@ -672,7 +843,7 @@ function ConcordEditor(root, concordInstance) {
 			}
 		root.find(".selection-toolbar").remove();
 		};
-	this.build = function(outline,collapsed, level) {
+	this.build = function(outline,collapsed, level, flInsertRawHtml) { //9/18/20 by DW -- new optional param, flInsertRawHtml
 		if(!level){
 			level = 1;
 			}
@@ -702,7 +873,7 @@ function ConcordEditor(root, concordInstance) {
 					iconName = nodeIcon;
 					}
 			}
-		var icon = "<i"+" class=\"node-icon icon-"+ iconName +"\"><"+"/i>";
+		var icon = ConcordUtil.getIconHtml (iconName);
 		wrapper.append(icon);
 		wrapper.addClass("type-icon");
 		if(attributes["isComment"]=="true"){
@@ -710,7 +881,17 @@ function ConcordEditor(root, concordInstance) {
 			}
 		var text = $("<div class='concord-text' contenteditable='true'></div>");
 		text.addClass("concord-level-"+level+"-text");
-		text.html(this.escape(outline.attr('text')));
+		
+		//9/18/20 by DW -- option to insert without escaping
+			var textToInsert;
+			if (flInsertRawHtml) {
+				textToInsert = outline.attr ('text'); 
+				}
+			else {
+				textToInsert = this.escape (outline.attr ('text')); 
+				}
+			text.html (textToInsert);
+		
 		if(attributes["cssTextClass"]!==undefined){
 			var cssClasses = attributes["cssTextClass"].split(/\s+/);
 			for(var c in cssClasses){
@@ -721,7 +902,7 @@ function ConcordEditor(root, concordInstance) {
 		var children = $("<ol></ol>");
 		var editor = this;
 		outline.children("outline").each(function() {
-			var child = editor.build($(this), collapsed, level+1);
+			var child = editor.build($(this), collapsed, level+1, flInsertRawHtml);
 			child.appendTo(children);
 			});
 		if(collapsed){
@@ -1449,9 +1630,16 @@ function ConcordOp(root, concordInstance, _cursor) {
 	this.cursorToXml = function(){
 		return concordInstance.editor.opml(this.getCursor());
 		};
+	
+	
 	this.cursorToXmlSubsOnly = function(){ //8/5/13 by DW
 		return concordInstance.editor.opml(this.getCursor(), true);
 		};
+	this.getNodeOpml = function (node) { //3/12/14 by DW
+		return concordInstance.editor.opml(node, true);
+		};
+	
+	
 	this.cut = function(){
 		if(!this.inTextMode()){
 			this.copy();
@@ -1560,19 +1748,32 @@ function ConcordOp(root, concordInstance, _cursor) {
 			var cursorPosition = node.offset().top;
 			var cursorHeight =node.height();
 			var windowPosition = $(window).scrollTop();
-			var windowHeight = $(window).height();
-			if( ( cursorPosition < windowPosition ) || ( (cursorPosition+cursorHeight) > (windowPosition+windowHeight) ) ){
-				if(cursorPosition < windowPosition){
-					$(window).scrollTop(cursorPosition);
-					}else if ((cursorPosition+cursorHeight) > (windowPosition+windowHeight)){
-						var lineHeight = parseInt(node.children(".concord-wrapper").children(".concord-text").css("line-height")) + 6;
-						if((cursorHeight+lineHeight) < windowHeight){
-							$(window).scrollTop(cursorPosition - (windowHeight-cursorHeight)+lineHeight);
-							}else{
-								$(window).scrollTop(cursorPosition);
+			var windowHeight = $(window).height (); 
+			var lineHeight = parseInt(node.children(".concord-wrapper").children(".concord-text").css("line-height")) + 6;
+			
+			if (flConcordScrollEnabled) { //6/24/14 by DW -- provide a way to disable automatic scrolling
+				if (cursorHeight > windowHeight) { //6/24/14 by DW
+					var ctscroll = cursorPosition - ctPixelsAboveOutlineArea - lineHeight;
+					if (ctscroll > 0) {
+						$(window).scrollTop (ctscroll);
+						}
+					}
+				else {
+					if (( cursorPosition < windowPosition ) || ( (cursorPosition+cursorHeight) > (windowPosition+windowHeight) ) ){
+						if(cursorPosition < windowPosition){
+							$(window).scrollTop(cursorPosition);
+							}else if ((cursorPosition+cursorHeight) > (windowPosition+windowHeight)){
+								if((cursorHeight+lineHeight) < windowHeight){
+									$(window).scrollTop(cursorPosition - (windowHeight-cursorHeight)+lineHeight);
+									}else{
+										$(window).scrollTop(cursorPosition);
+										}
 								}
 						}
+					}
+				
 				}
+			
 			this.markChanged();
 			}
 		};
@@ -1751,7 +1952,7 @@ function ConcordOp(root, concordInstance, _cursor) {
 		this.markChanged();
 		return ableToMoveInDirection;
 		};
-	this.insert = function(insertText, insertDirection) {
+	this.insert = function(insertText, insertDirection, flInsertRawHtml) { //9/16/20 by DW -- new optional param -- flInsertRawHtml
 		this.saveState();
 		var level = this.getCursor().parents(".concord-node").length+1;
 		var node = $("<li></li>");
@@ -1767,7 +1968,7 @@ function ConcordOp(root, concordInstance, _cursor) {
 		node.addClass("concord-level-"+level);
 		var wrapper = $("<div class='concord-wrapper'></div>");
 		var iconName="caret-right";
-		var icon = "<i"+" class=\"node-icon icon-"+ iconName +"\"><"+"/i>";
+		var icon = ConcordUtil.getIconHtml (iconName);
 		wrapper.append(icon);
 		wrapper.addClass("type-icon");
 		var text = $("<div class='concord-text' contenteditable='true'></div>");
@@ -1777,7 +1978,12 @@ function ConcordOp(root, concordInstance, _cursor) {
 		wrapper.appendTo(node);
 		outline.appendTo(node);
 		if(insertText && (insertText!="")){
-			text.html(concordInstance.editor.escape(insertText));
+			if (flInsertRawHtml) { //9/16/20 by DW
+				text.html(insertText);
+				}
+			else {
+				text.html(concordInstance.editor.escape(insertText));
+				}
 			}
 		var cursor = this.getCursor();
 		if(!insertDirection) {
@@ -2181,6 +2387,8 @@ function ConcordOp(root, concordInstance, _cursor) {
 				this.setCursor(this.getCursor());
 				}
 			this.markChanged();
+			var node = this.getCursor (); //5/9/21 by DW
+			concordInstance.fireCallback ("opReorg", this.setCursorContext (node)); //5/9/21 by DW
 			}
 		return ableToMoveInDirection;
 		};
@@ -2304,6 +2512,37 @@ function ConcordOp(root, concordInstance, _cursor) {
 			});
 		return text;
 		};
+	this.saveCursor = function () { //8/5/14 by DW -- so we can save the location of the cursor in an OPML file
+		var cursor = this.getCursor (), prev, ct = 0;
+		while (true) {
+			var prev = this._walk_up (cursor);
+			if (prev) {
+				cursor = prev;
+				ct++;
+				}
+			else {
+				break;
+				}
+			}
+		return (ct);
+		}
+	this.sort = function () { //3/7/20 by DW -- sort the list containing the bar cursor headline
+		this.saveState ();
+		var mycursor = this.getCursor ();
+		var parentnode = $(mycursor).parent ();
+		var items = $(parentnode).children ();
+		items.sort (function (a, b) {
+			var keyA = $(a).text ().toLowerCase ();
+			var keyB = $(b).text ().toLowerCase ();
+			if (keyA < keyB) return -1;
+			if (keyA > keyB) return 1;
+			return 0;
+			});
+		$.each (items, function (i, li) {
+			parentnode.append (li); //removes it from the old spot and moves it
+			});
+		this.markChanged ();
+		}
 	this.outlineToXml = function(ownerName, ownerEmail, ownerId) {
 		var head = this.getHeaders();
 		if(ownerName) {
@@ -2349,6 +2588,9 @@ function ConcordOp(root, concordInstance, _cursor) {
 			cursor = next;
 			} while(cursor!=null);
 		head["expansionState"] = expansionStates.join(",");
+		
+		head["lastCursor"] = this.saveCursor (); //8/5/14 by DW
+		
 		var opml = '';
 		var indent=0;
 		var add = function(s){
@@ -2449,7 +2691,7 @@ function ConcordOp(root, concordInstance, _cursor) {
 		this.setCursor(node);
 		this.markChanged();
 		};
-	this.xmlToOutline = function(xmlText, flSetFocus) { //2/22/14 by DW -- new param, flSetFocus
+	this.xmlToOutline = function(xmlText, flSetFocus, flInsertRawHtml) { //2/22/14 by DW -- new param, flSetFocus. 9/18/20 by DW -- flInsertRawHtml
 		
 		if (flSetFocus == undefined) { //2/22/14 by DW
 			flSetFocus = true;
@@ -2473,7 +2715,7 @@ function ConcordOp(root, concordInstance, _cursor) {
 			});
 		root.data("head", headers);
 		doc.find("body").children("outline").each(function() {
-			root.append(concordInstance.editor.build($(this), true));
+			root.append(concordInstance.editor.build($(this), true, undefined, flInsertRawHtml)); //9/18/20 by DW -- pass new flInsertRawHtml param
 			});
 		root.data("changed", false);
 		root.removeData("previousChange");
@@ -2510,7 +2752,34 @@ function ConcordOp(root, concordInstance, _cursor) {
 		this.setTextMode(false);
 		
 		if (flSetFocus) {
-			this.setCursor(root.find(".concord-node:first"));
+			var lastCursor = doc.find ("lastCursor"); //8/5/14 by DW
+			this.setCursor (root.find (".concord-node:first"));
+			if (lastCursor && lastCursor.text () && (lastCursor.text () != "")) { //8/5/14 by DW
+				var ix = parseInt (lastCursor.text ());
+				if (ix != NaN) {
+					var cursor = this.getCursor (), flCursorMoved = false;
+					for (var i = 1; i <= ix; i++) {
+						var next = null;
+						if (!cursor.hasClass ("collapsed")) {
+							var outline = cursor.children ("ol");
+							if (outline.length == 1) {
+								var firstChild = outline.children (".concord-node:first");
+								if (firstChild.length == 1) {
+									next = firstChild;
+									}
+								}
+							}
+						if (!next) {
+							next = this._walk_down (cursor);
+							}
+						cursor = next;
+						flCursorMoved = true;
+						}
+					if (flCursorMoved) {
+						this.setCursor (next);
+						}
+					}
+				}
 			}
 		
 		root.data("currentChange", root.children().clone(true, true));
@@ -2566,7 +2835,7 @@ function ConcordOpAttributes(concordInstance, cursor) {
 						iconName = value;
 						}
 				if(iconName){
-					var icon = "<i"+" class=\"node-icon icon-"+ iconName +"\"><"+"/i>";
+					var icon = ConcordUtil.getIconHtml (iconName);
 					wrapper.children(".node-icon:first").replaceWith(icon);
 					}
 				}
@@ -2611,7 +2880,7 @@ function ConcordOpAttributes(concordInstance, cursor) {
 						iconName = value;
 						}
 				if(iconName){
-					var icon = "<i"+" class=\"node-icon icon-"+ iconName +"\"><"+"/i>";
+					var icon = ConcordUtil.getIconHtml (iconName);
 					wrapper.children(".node-icon:first").replaceWith(icon);
 					}
 				}
@@ -2668,7 +2937,7 @@ function ConcordOpAttributes(concordInstance, cursor) {
 					iconName = value;
 					}
 			if(iconName){
-				var icon = "<i"+" class=\"node-icon icon-"+ iconName +"\"><"+"/i>";
+				var icon = ConcordUtil.getIconHtml (iconName);
 				wrapper.children(".node-icon:first").replaceWith(icon);
 				}
 			}
@@ -2756,13 +3025,17 @@ function Op(opmltext){
 				}
 			}
 		if(!readonly){
+			var keystrokeString = ConcordUtil.getKeystroke (event);
+			event.concord = { //2/17/20 by DW
+				keystrokeString, 
+				flKeyCaptured: false
+				};
 			concordInstance.fireCallback("opKeystroke", event);
-			var keyCaptured = false;
+			var keyCaptured = event.concord.flKeyCaptured;
 			var commandKey = event.metaKey || event.ctrlKey;
-			switch(event.which) {
-				case 8:
-					//Backspace
-					if(concord.mobile){
+			switch (keystrokeString) {
+				case "backspace":
+					if (concord.mobile) {
 						if((concordInstance.op.getLineText()=="") || (concordInstance.op.getLineText()=="<br>")){
 							event.preventDefault();
 							concordInstance.op.deleteLine();
@@ -2781,7 +3054,29 @@ function Op(opmltext){
 								}
 						}
 					break;
-				case 9:
+				case "meta-backspace": //cmd-backspace -- 2/6/20 by DW
+					function cmdBackspace () {
+						var rightstring = concordInstance.op.getLineText ();
+						if (concordInstance.op.countSubs () > 0) { //has subs
+							return (false);
+							}
+						if (!concordInstance.op.go (up, 1)) { //it's the first line at the level, nothing to merge with
+							return (false);
+							}
+						if (concordInstance.op.countSubs () > 0) { //has subs
+							concordInstance.op.go (down, 1);
+							return (false);
+							}
+						concordInstance.op.setLineText (concordInstance.op.getLineText () + rightstring);
+						concordInstance.op.go (down, 1)
+						concordInstance.op.deleteLine (); //moves cursor up before deleting
+						return (true);
+						}
+					if (!cmdBackspace ()) {
+						ConcordUtil.speakerBeep ();
+						}
+					break;
+				case "tab": 
 					keyCaptured = true;
 					event.preventDefault();
 					event.stopPropagation();
@@ -2791,70 +3086,49 @@ function Op(opmltext){
 							concordInstance.op.reorg(right);
 							}
 					break;
-				case 65:
-					//CMD+A
-						if(commandKey) {
-							keyCaptured = true;
-							event.preventDefault();
-							var cursor = concordInstance.op.getCursor();
-							if(concordInstance.op.inTextMode()){
-								concordInstance.op.focusCursor();
-								document.execCommand('selectAll',false,null);
-								}else{
-									concordInstance.editor.selectionMode();
-									cursor.parent().children().addClass("selected");
-									}
+				case "select-all":
+					keyCaptured = true;
+					event.preventDefault();
+					var cursor = concordInstance.op.getCursor();
+					if(concordInstance.op.inTextMode()){
+						concordInstance.op.focusCursor();
+						document.execCommand('selectAll',false,null);
+						}else{
+							concordInstance.editor.selectionMode();
+							cursor.parent().children().addClass("selected");
 							}
-						break;
-				case 85:
-					//CMD+U
-						if(commandKey) {
-							keyCaptured = true;
-							event.preventDefault();
-							concordInstance.op.reorg(up);
-							}
-						break;
-				case 68:
-					//CMD+D
-						if(commandKey) {
-							keyCaptured = true;
-							event.preventDefault();
-							concordInstance.op.reorg(down);
-						}
-						break;
-				case 76:
-					//CMD+L
-						if(commandKey) {
-							keyCaptured = true;
-							event.preventDefault();
-							concordInstance.op.reorg(left);
-							}
-						break;
-				case 82:
-					//CMD+R
-						if(commandKey) {
-							keyCaptured = true;
-							event.preventDefault();
-							concordInstance.op.reorg(right);
-							}
-						break;
-				case 219:
-					//CMD+[
-						if(commandKey) {
-							keyCaptured = true;
-							event.preventDefault();
-							concordInstance.op.promote();
-							}
-						break;
-				case 221:
-					//CMD+]
-						if(commandKey) {
-							keyCaptured = true;
-							event.preventDefault();
-							concordInstance.op.demote();
-							}
-						break;
-				case 13:
+					break;
+				case "reorg-up":
+					keyCaptured = true;
+					event.preventDefault();
+					concordInstance.op.reorg(up);
+					break;
+				case "reorg-down":
+					keyCaptured = true;
+					event.preventDefault ();
+					concordInstance.op.reorg (down);
+					break;
+				case "reorg-left":
+					keyCaptured = true;
+					event.preventDefault ();
+					concordInstance.op.reorg (left);
+					break;
+				case "reorg-right":
+					keyCaptured = true;
+					event.preventDefault ();
+					concordInstance.op.reorg (right);
+					break;
+				case "promote":
+					keyCaptured = true;
+					event.preventDefault();
+					concordInstance.op.promote();
+					break;
+				case "demote":
+					keyCaptured = true;
+					event.preventDefault();
+					concordInstance.op.demote();
+					break;
+				case "return":
 					if(concord.mobile){
 						//Mobile
 						event.preventDefault();
@@ -2866,7 +3140,7 @@ function Op(opmltext){
 						cursor.removeClass("dirty");
 						cursor.removeClass("collapsed");
 						concordInstance.op.setLineText("");
-						var icon = "<i"+" class=\"node-icon icon-caret-right\"><"+"/i>";
+						var icon = ConcordUtil.getIconHtml ("caret-right");
 						cursor.children(".concord-wrapper").children(".node-icon").replaceWith(icon);
 						clonedCursor.insertBefore(cursor);
 						concordInstance.op.attributes.makeEmpty();
@@ -2890,133 +3164,152 @@ function Op(opmltext){
 								}
 						}
 					break;
-				case 37:
-					// left
-						var active = false;
-						if($(event.target).hasClass("concord-text")) {
-							if(event.target.selectionStart > 0) {
-								active = false;
+				case "meta-return": //cmd-return -- 2/6/20 by DW
+					if (concordInstance.op.inTextMode ()) {
+						if (concordInstance.op.countSubs () == 0) { //no subs
+							function getCaretPosition (node) {
+								var range = window.getSelection().getRangeAt(0);
+								var preCaretRange = range.cloneRange(), caretPosition;
+								var tmp = document.createElement("div");
+								preCaretRange.selectNodeContents(node);
+								preCaretRange.setEnd(range.endContainer, range.endOffset);
+								tmp.appendChild(preCaretRange.cloneContents());
+								caretPosition = tmp.innerHTML.length;
+								return caretPosition;
 								}
+							var text = concordInstance.op.getCursor ().children (".concord-wrapper:first").children (".concord-text:first");
+							var ixcaret = getCaretPosition (text.get (0));
+							var linetext = concordInstance.op.getLineText ();
+							var leftstring = ConcordUtil.stringMid (linetext, 1, ixcaret);
+							var rightstring = ConcordUtil.stringDelete (linetext, 1, ixcaret);
+							concordInstance.op.setLineText (leftstring);
+							concordInstance.op.insert (rightstring, down);
 							}
-						if(context.find(".concord-cursor.selected").length == 1) {
-							active = true;
+						else {
+							console.log ("Can't split this headline because it has subs.");
+							ConcordUtil.speakerBeep ();
 							}
-						if(active) {
-							keyCaptured = true;
-							event.preventDefault();
-							var cursor = concordInstance.op.getCursor();
-							var prev = concordInstance.op._walk_up(cursor);
-							if(prev) {
-								concordInstance.op.setCursor(prev);
-								}
-							}
-						break;
-				case 38:
-					// up
-						keyCaptured = true;
-						event.preventDefault();
-						if(concordInstance.op.inTextMode()){
-							var cursor = concordInstance.op.getCursor();
-							var prev = concordInstance.op._walk_up(cursor);
-							if(prev) {
-								concordInstance.op.setCursor(prev);
-								}
-							}else{
-								concordInstance.op.go(up,1,event.shiftKey, concordInstance.op.inTextMode());
-								}
-						break;
-				case 39:
-					// right
-						var active = false;
-						if(context.find(".concord-cursor.selected").length == 1) {
-							active = true;
-							}
-						if(active) {
-							keyCaptured = true;
-							event.preventDefault();
-							var next = null;
-							var cursor = concordInstance.op.getCursor();
-							if(!cursor.hasClass("collapsed")) {
-								var outline = cursor.children("ol");
-								if(outline.length == 1) {
-									var firstChild = outline.children(".concord-node:first");
-									if(firstChild.length == 1) {
-										next = firstChild;
-									}
-								}
-							}
-							if(!next) {
-								next = concordInstance.op._walk_down(cursor);
-							}
-							if(next) {
-								concordInstance.op.setCursor(next);
-								}
-							}
-						break;
-				case 40:
-					// down
-						keyCaptured = true;
-						event.preventDefault();
-						if(concordInstance.op.inTextMode()){
-							var next = null;
-							var cursor = concordInstance.op.getCursor();
-							if(!cursor.hasClass("collapsed")) {
-								var outline = cursor.children("ol");
-								if(outline.length == 1) {
-									var firstChild = outline.children(".concord-node:first");
-									if(firstChild.length == 1) {
-										next = firstChild;
-									}
-								}
-							}
-							if(!next) {
-								next = concordInstance.op._walk_down(cursor);
-							}
-							if(next) {
-								concordInstance.op.setCursor(next);
-								}
-							}else{
-								concordInstance.op.go(down,1, event.shiftKey, concordInstance.op.inTextMode());
-								}
-						break;
-				case 46:
-					// delete
-						if(concordInstance.op.inTextMode()) {
-							if(!concordInstance.op.getCursor().hasClass("dirty")){
-								concordInstance.op.saveState();
-								concordInstance.op.getCursor().addClass("dirty");
-								}
-							}else{
-								keyCaptured = true;
-								event.preventDefault();
-								concordInstance.op.deleteLine();
-								}
-						break;
-				case 90:
-					//CMD+Z
-					if(commandKey){
-						keyCaptured=true;
-						event.preventDefault();
-						concordInstance.op.undo();
+						}
+					else {
+						console.log ("Can't split this headline because you're not in text mode.");
+						ConcordUtil.speakerBeep ();
 						}
 					break;
-				case 88:
-					//CMD+X
-					if(commandKey){
-						if(concordInstance.op.inTextMode()){
-							if(concordInstance.op.getLineText()==""){
-								keyCaptured=true;
-								event.preventDefault();
-								concordInstance.op.deleteLine();
-								}
-							else {
-								concordInstance.op.saveState();
-								}
+				case "cursor-left":
+					var active = false;
+					if($(event.target).hasClass("concord-text")) {
+						if(event.target.selectionStart > 0) {
+							active = false;
+							}
+						}
+					if(context.find(".concord-cursor.selected").length == 1) {
+						active = true;
+						}
+					if(active) {
+						keyCaptured = true;
+						event.preventDefault();
+						var cursor = concordInstance.op.getCursor();
+						var prev = concordInstance.op._walk_up(cursor);
+						if(prev) {
+							concordInstance.op.setCursor(prev);
 							}
 						}
 					break;
-				case 67:
-					//CMD+C
+				case "cursor-up":
+					keyCaptured = true;
+					event.preventDefault();
+					if(concordInstance.op.inTextMode()){
+						var cursor = concordInstance.op.getCursor();
+						var prev = concordInstance.op._walk_up(cursor);
+						if(prev) {
+							concordInstance.op.setCursor(prev);
+							}
+						}else{
+							concordInstance.op.go(up,1,event.shiftKey, concordInstance.op.inTextMode());
+							}
+					break;
+				case "cursor-right":
+					var active = false;
+					if(context.find(".concord-cursor.selected").length == 1) {
+						active = true;
+						}
+					if(active) {
+						keyCaptured = true;
+						event.preventDefault();
+						var next = null;
+						var cursor = concordInstance.op.getCursor();
+						if(!cursor.hasClass("collapsed")) {
+							var outline = cursor.children("ol");
+							if(outline.length == 1) {
+								var firstChild = outline.children(".concord-node:first");
+								if(firstChild.length == 1) {
+									next = firstChild;
+								}
+							}
+						}
+						if(!next) {
+							next = concordInstance.op._walk_down(cursor);
+						}
+						if(next) {
+							concordInstance.op.setCursor(next);
+							}
+						}
+					break;
+				case "cursor-down":
+					keyCaptured = true;
+					event.preventDefault();
+					if(concordInstance.op.inTextMode()){
+						var next = null;
+						var cursor = concordInstance.op.getCursor();
+						if(!cursor.hasClass("collapsed")) {
+							var outline = cursor.children("ol");
+							if(outline.length == 1) {
+								var firstChild = outline.children(".concord-node:first");
+								if(firstChild.length == 1) {
+									next = firstChild;
+								}
+							}
+						}
+						if(!next) {
+							next = concordInstance.op._walk_down(cursor);
+						}
+						if(next) {
+							concordInstance.op.setCursor(next);
+							}
+						}else{
+							concordInstance.op.go(down,1, event.shiftKey, concordInstance.op.inTextMode());
+							}
+					break;
+				case "delete":
+					if(concordInstance.op.inTextMode()) {
+						if(!concordInstance.op.getCursor().hasClass("dirty")){
+							concordInstance.op.saveState();
+							concordInstance.op.getCursor().addClass("dirty");
+							}
+						}else{
+							keyCaptured = true;
+							event.preventDefault();
+							concordInstance.op.deleteLine();
+							}
+					break;
+				case "undo":
+					keyCaptured=true;
+					event.preventDefault();
+					concordInstance.op.undo();
+					break;
+				case "cut":
+					if(concordInstance.op.inTextMode()){
+						if(concordInstance.op.getLineText()==""){
+							keyCaptured=true;
+							event.preventDefault();
+							concordInstance.op.deleteLine();
+							}
+						else {
+							concordInstance.op.saveState();
+							}
+						}
+					break;
+				case "copy": //problem!
 					if(false&&commandKey){
 						if(concordInstance.op.inTextMode()){
 							if(concordInstance.op.getLineText()!=""){
@@ -3029,58 +3322,41 @@ function Op(opmltext){
 								}
 						}
 					break;
-				case 86:
-					//CMD+V
+				case "paste": //problem!
 					break;
-				case 220:
-					// CMD+Backslash
-					if(commandKey){
-						if(concordInstance.script.isComment()){
-							concordInstance.script.unComment();
-							}else{
-								concordInstance.script.makeComment();
-								}
-						}
+				case "toggle-comment":
+					if(concordInstance.script.isComment()){
+						concordInstance.script.unComment();
+						}else{
+							concordInstance.script.makeComment();
+							}
 					break;
-				case 73:
-					//CMD+I
-					if(commandKey){
-						keyCaptured=true;
-						event.preventDefault();
-						concordInstance.op.italic();
-						}
+				case "italicize":
+					keyCaptured=true;
+					event.preventDefault();
+					concordInstance.op.italic();
 					break;
-				case 66:
-					//CMD+B
-					if(commandKey){
-						keyCaptured=true;
-						event.preventDefault();
-						concordInstance.op.bold();
-						}
+				case "bolden":
+					keyCaptured=true;
+					event.preventDefault();
+					concordInstance.op.bold();
 					break;
-				case 192:
-					//CMD+`
-					if(commandKey){
-						keyCaptured=true;
-						event.preventDefault();
-						concordInstance.op.setRenderMode(!concordInstance.op.getRenderMode());
-						}
+				case "toggle-render":
+					keyCaptured=true;
+					event.preventDefault();
+					concordInstance.op.setRenderMode(!concordInstance.op.getRenderMode());
 					break;
-				case 188:
-					//CMD+,
-					if(commandKey){
-						keyCaptured=true;
-						event.preventDefault();
-						if(concordInstance.op.subsExpanded()){
-							concordInstance.op.collapse();
-							}else{
-								concordInstance.op.expand();
-								}
-						}
+				case "toggle-expand":
+					keyCaptured=true;
+					event.preventDefault();
+					if(concordInstance.op.subsExpanded()){
+						concordInstance.op.collapse();
+						}else{
+							concordInstance.op.expand();
+							}
 					break;
-				case 191:
-					//CMD+/
-					if(commandKey){
+				case "run-selection":
+					if (!keyCaptured) { //2/19/21 by DW
 						keyCaptured=true;
 						event.preventDefault();
 						concordInstance.op.runSelection();
