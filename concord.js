@@ -1,116 +1,125 @@
-// Copyright 2020-2021, Dave Winer
-// Copyright 2013, Small Picture, Inc.
+// Copyright 2020-2021, Dave Winer           Copyright 2013, Small Picture, Inc.
 
 $(function () {
-	if($.fn.tooltip !== undefined){
+	if ($.fn.tooltip !== undefined) {
 		$("a[rel=tooltip]").tooltip({
 			live: true
-			})
-		}
-	})
+		})
+	}
+});
+
 $(function () {
-	if($.fn.popover !== undefined){
-		$("a[rel=popover]").on("mouseenter mouseleave", function(){$(this).popover("toggle")})
-		}
-	})
+	if ($.fn.popover !== undefined) {
+		$("a[rel=popover]").on("mouseenter mouseleave", function() {
+			$(this).popover("toggle")});
+	}
+});
+
 if (!Array.prototype.indexOf) {
 	Array.prototype.indexOf = function(obj, start) {
 		for (var i = (start || 0), j = this.length; i < j; i++) {
-			if (this[i] === obj) { return i; }
+			if (this[i] === obj) { 
+				return i; 
 			}
-		return -1;
 		}
+		return -1;
 	}
+}
+
 var concord = {
 	version: "3.0.5",
 	mobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent),
 	ready: false,
 	handleEvents: true,
 	resumeCallbacks: [],
-	onResume: function(cb){
+	onResume: function(cb) {
 		this.resumeCallbacks.push(cb);
-		},
-	resumeListening: function(){
-		if(!this.handleEvents){
-			this.handleEvents=true;
+	},
+	resumeListening: function() {
+		if (!this.handleEvents) {
+			this.handleEvents = true;
 			var r = this.getFocusRoot();
-			if(r!=null){
+			if (r !== null) {
 				var c = new ConcordOutline(r.parent());
-				if(c.op.inTextMode()){
+				if (c.op.inTextMode()) {
 					c.op.focusCursor();
 					c.editor.restoreSelection();
-					}else{
-						c.pasteBinFocus();
-						}
-				for(var i in this.resumeCallbacks){
-					var cb = this.resumeCallbacks[i];
-					cb();
-					}
-				this.resumeCallbacks=[];
+				} else {
+					c.pasteBinFocus();
 				}
+				
+				this.resumeCallbacks.forEach(cb => cb());
+				this.resumeCallbacks = [];
 			}
-		},
-	stopListening: function(){
-		if(this.handleEvents){
-			this.handleEvents=false;
-			var r = this.getFocusRoot();
-			if(r!=null){
-				var c = new ConcordOutline(r.parent());
-				if(c.op.inTextMode()){
+		}
+	},
+	stopListening: function() {
+		if (this.handleEvents) {
+			this.handleEvents = false;
+			if (this.getFocusRoot() != null) {
+				const c = new ConcordOutline(r.parent());
+				if (c.op.inTextMode()) {
 					c.editor.saveSelection();
-					}
 				}
 			}
-		},
+		}
+	},
 	focusRoot: null,
-	getFocusRoot: function(){
-		if($(".concord-root:visible").length==1){
+	getFocusRoot: function() {
+		if ($(".concord-root:visible").length==1) {
 			return this.setFocusRoot($(".concord-root:visible:first"));
-			}
-		if($(".modal").is(":visible")){
-			if($(".modal").find(".concord-root:visible:first").length==1){
+		}
+
+		if ($(".modal").is(":visible") &&
+			$(".modal").find(".concord-root:visible:first").length == 1) {
 				return this.setFocusRoot($(".modal").find(".concord-root:visible:first"));
-				}
-			}
-		if(this.focusRoot==null){
-			if($(".concord-root:visible").length>0){
+		}
+
+		if (this.focusRoot === null) {
+			if ($(".concord-root:visible").length > 0) {
 				return this.setFocusRoot($(".concord-root:visible:first"));
-				}else{
-					return null;
-					}
+			} else {
+				return null;
 			}
-		if(!this.focusRoot.is(":visible")){
+		}
+
+		if (!this.focusRoot.is(":visible")) {
 			return this.setFocusRoot($(".concord-root:visible:first"));
-			}
+		}
+
 		return this.focusRoot;
-		},
-	setFocusRoot: function(root){
-		var origRoot = this.focusRoot;
-		var concordInstance = new ConcordOutline(root.parent());
-		if((origRoot!=null) && !(origRoot[0]===root[0])){
+	},
+	setFocusRoot: function(root) {
+		const origRoot = this.focusRoot;
+		const concordInstance = new ConcordOutline(root.parent());
+
+		if (origRoot != null && origRoot[0] !== root[0]) {
 			var origConcordInstance = new ConcordOutline(origRoot.parent());
 			origConcordInstance.editor.hideContextMenu();
 			origConcordInstance.editor.dragModeExit();
-			if(concordInstance.op.inTextMode()){
+
+			if (concordInstance.op.inTextMode()) {
 				concordInstance.op.focusCursor();
-				}
-			else {
+			} else {
 				concordInstance.pasteBinFocus();
-				}
-			}
-		this.focusRoot = root;
-		return this.focusRoot;
-		},
-	updateFocusRootEvent: function(event){
-		var root = $(event.target).parents(".concord-root:first");
-		if(root.length==1){
-			concord.setFocusRoot(root);
 			}
 		}
-	};
+
+		this.focusRoot = root;
+		return this.focusRoot;
+	},
+	updateFocusRootEvent: function(event) {
+		const root = $(event.target).parents(".concord-root:first");
+		if (root.length === 1) {
+			concord.setFocusRoot(root);
+		}
+	}
+};
+
 var concordEnvironment = {
 	"version" : concord.version
-	};
+};
+
 var concordClipboard = undefined;
 var flConcordScrollEnabled = true; //6/24/14 by DW
 var ctPixelsAboveOutlineArea = 0; //6/24/14 by DW
@@ -118,8 +127,6 @@ var ctPixelsAboveOutlineArea = 0; //6/24/14 by DW
 jQuery.fn.reverse = [].reverse;
 
 //Constants
-	var nil = null;
-	var infinity = Number.MAX_VALUE;
 	var down = "down";
 	var left = "left";
 	var right = "right";
@@ -143,15 +150,11 @@ var ConcordUtil = {
 		return escaped;
 		},
 	stringMid: function (s, ix, len) { //1/27/20 by DW
-		return (s.substr (ix-1, len));
-		},
+		return s.substr(ix-1, len);
+	},
 	stringDelete: function (s, ix, ct) { //1/27/20 by DW
-		var start = ix - 1;
-		var end = (ix + ct) - 1;
-		var s1 = s.substr (0, start);
-		var s2 = s.substr (end);
-		return (s1 + s2);
-		},
+		return (s.substr (0, ix - 1) + s.substr ((ix + ct) - 1));
+	},
 	endsWith: function (s, possibleEnding, flUnicase) { //1/27/20 by DW
 		function stringLower (s) {
 			return (s.toLowerCase ());
@@ -165,20 +168,19 @@ var ConcordUtil = {
 			}
 		if (flUnicase) {
 			for (var i = possibleEnding.length - 1; i >= 0; i--) {
-				if (stringLower (s [ixstring--]) != stringLower (possibleEnding [i])) {
+				if (stringLower(s[ixstring--]) != stringLower(possibleEnding[i])) {
 					return (false);
-					}
 				}
 			}
-		else {
+		} else {
 			for (var i = possibleEnding.length - 1; i >= 0; i--) {
 				if (s [ixstring--] != possibleEnding [i]) {
 					return (false);
-					}
 				}
 			}
+		}
 		return (true);
-		},
+	},
 	speakerBeep: function () { //1/27/20 by DW
 		try {
 			speakerBeep ();
@@ -317,34 +319,34 @@ function ConcordOutline(container, options) {
 	this.op = null;
 	this.script = null;
 	this.pasteBin = null;
-	this.pasteBinFocus = function(){
-		if(!concord.ready){
+	this.pasteBinFocus = function() {
+		if (!concord.ready) {
 			return;
 			}
-		if(concord.mobile){
+		if (concord.mobile) {
 			return;
 			}
-		if(this.root.is(":visible")){
+		if (this.root.is(":visible")) {
 			var node = this.op.getCursor();
 			var nodeOffset = node.offset();
 			this.pasteBin.offset(nodeOffset);
 			this.pasteBin.css("z-index","1000");
-			if((this.pasteBin.text()=="")||(this.pasteBin.text()=="\n")){
+			if ((this.pasteBin.text()=="")||(this.pasteBin.text()=="\n")) {
 				this.pasteBin.text("...");
 				}
 			this.op.focusCursor();
 			this.pasteBin.focus();
-			if(this.pasteBin[0] === document.activeElement){
+			if (this.pasteBin[0] === document.activeElement) {
 				document.execCommand("selectAll");
 				}
 			}
 		};
 	this.callbacks = function(callbacks) {
-		if(callbacks) {
+		if (callbacks) {
 			this.root.data("callbacks", callbacks);
 			return callbacks;
 		} else {
-			if(this.root.data("callbacks")) {
+			if (this.root.data("callbacks")) {
 				return this.root.data("callbacks");
 				} else {
 					return {};
@@ -353,40 +355,40 @@ function ConcordOutline(container, options) {
 		};
 	this.fireCallback = function(name, value) {
 		var cb = this.callbacks()[name]
-		if(cb) {
+		if (cb) {
 			cb(value);
 			}
 		};
 	this.prefs = function(newprefs) {
 		var prefs = this.root.data("prefs");
-		if(prefs == undefined){
+		if (prefs == undefined) {
 			prefs = {};
 			}
-		if(newprefs) {
-			for(var key in newprefs){
+		if (newprefs) {
+			for(var key in newprefs) {
 				prefs[key] = newprefs[key];
 				}
 			this.root.data("prefs", prefs);
-			if(prefs.readonly){
+			if (prefs.readonly) {
 				this.root.addClass("readonly");
 				}
-			if(prefs.renderMode!==undefined){
+			if (prefs.renderMode!==undefined) {
 				this.root.data("renderMode", prefs.renderMode);
 				}
-			if(prefs.contextMenu){
+			if (prefs.contextMenu) {
 				$(prefs.contextMenu).hide();
 				}
 			var style = {};
-			if(prefs.outlineFont) {
+			if (prefs.outlineFont) {
 				style["font-family"] = prefs.outlineFont;
 				}
-			if(prefs.outlineFontSize) {
+			if (prefs.outlineFontSize) {
 				prefs.outlineFontSize = parseInt(prefs.outlineFontSize);
 				style["font-size"] = prefs.outlineFontSize + "px";
 				style["min-height"] = (prefs.outlineFontSize + 6) + "px";
 				style["line-height"] = (prefs.outlineFontSize + 6) + "px";
 				}
-			if(prefs.outlineLineHeight) {
+			if (prefs.outlineLineHeight) {
 				prefs.outlineLineHeight = parseInt(prefs.outlineLineHeight);
 				style["min-height"] = prefs.outlineLineHeight + "px";
 				style["line-height"] = prefs.outlineLineHeight + "px";
@@ -394,7 +396,7 @@ function ConcordOutline(container, options) {
 			this.root.parent().find("style.prefsStyle").remove();
 			var css = '<style type="text/css" class="prefsStyle">\n';
 			var cssId="";
-			if(this.root.parent().attr("id")){
+			if (this.root.parent().attr("id")) {
 				cssId="#"+this.root.parent().attr("id");
 				}
 			css += cssId + ' .concord .concord-node .concord-wrapper .concord-text {';
@@ -404,16 +406,16 @@ function ConcordOutline(container, options) {
 			css += '}\n';
 			css += cssId + ' .concord .concord-node .concord-wrapper .node-icon {';
 			for(var attribute in style) {
-				if(attribute!="font-family"){
+				if (attribute!="font-family") {
 					css += attribute + ': ' + style[attribute] + ';';
 					}
 				}
 			css += '}\n'
 			var wrapperPaddingLeft = prefs.outlineLineHeight;
-			if(wrapperPaddingLeft===undefined){
+			if (wrapperPaddingLeft===undefined) {
 				wrapperPaddingLeft = prefs.outlineFontSize;
 				}
-			if(wrapperPaddingLeft!== undefined){
+			if (wrapperPaddingLeft!== undefined) {
 				css += cssId + ' .concord .concord-node .concord-wrapper {';
 				css += "padding-left: " + wrapperPaddingLeft + "px";
 				css += "}\n";
@@ -423,7 +425,7 @@ function ConcordOutline(container, options) {
 				}
 			css += '</style>\n';
 			this.root.before(css);
-			if(newprefs.css){
+			if (newprefs.css) {
 				this.op.setStyle(newprefs.css);
 				}
 			}
@@ -433,27 +435,27 @@ function ConcordOutline(container, options) {
 		this.editor = new ConcordEditor(this.root, this);
 		this.op = new ConcordOp(this.root, this);
 		this.script = new ConcordScript(this.root, this);
-		if(options) {
-			if(options.prefs) {
+		if (options) {
+			if (options.prefs) {
 				this.prefs(options.prefs);
 				}
-			if(options.open) {
+			if (options.open) {
 				this.root.data("open", options.open);
 				}
-			if(options.save) {
+			if (options.save) {
 				this.root.data("save", options.save);
 				}
-			if(options.callbacks) {
+			if (options.callbacks) {
 				this.callbacks(options.callbacks);
 				}
-			if(options.id) {
+			if (options.id) {
 				this.root.data("id", options.id);
 				this.open();
 				}
 			}
 		};
 	this.init = function() {
-		if($(container).find(".concord-root:first").length > 0) {
+		if ($(container).find(".concord-root:first").length > 0) {
 			this.root = $(container).find(".concord-root:first");
 			this.pasteBin = $(container).find(".pasteBin:first");
 			this.afterInit();
@@ -474,18 +476,18 @@ function ConcordOutline(container, options) {
 		};
 	this.open = function(cb) {
 		var opmlId = this.root.data("id");
-		if(!opmlId) {
+		if (!opmlId) {
 			return;
 			}
 		var root = this.root;
 		var editor = this.editor;
 		var op = this.op;
 		var openUrl = "http://concord.smallpicture.com/open";
-		if(root.data("open")) {
+		if (root.data("open")) {
 			openUrl = root.data("open");
 			}
 		params = {}
-		if(opmlId.match(/^http.+$/)) {
+		if (opmlId.match(/^http.+$/)) {
 			params["url"] = opmlId
 			} else {
 				params["id"] = opmlId
@@ -496,15 +498,15 @@ function ConcordOutline(container, options) {
 			data: params,
 			dataType: "xml",
 			success: function(opml) {
-				if(opml) {
+				if (opml) {
 					op.xmlToOutline(opml);
-					if(cb) {
+					if (cb) {
 						cb();
 						}
 					}
 				},
 			error: function() {
-				if(root.find(".concord-node").length == 0) {
+				if (root.find(".concord-node").length == 0) {
 					op.wipe();
 					}
 				}
@@ -512,9 +514,9 @@ function ConcordOutline(container, options) {
 		};
 	this.save = function(cb) {
 		var opmlId = this.root.data("id");
-		if(opmlId && this.op.changed()) {
+		if (opmlId && this.op.changed()) {
 			var saveUrl = "http://concord.smallpicture.com/save";
-			if(this.root.data("save")) {
+			if (this.root.data("save")) {
 				saveUrl = this.root.data("save");
 				}
 			var concordInstance = this;
@@ -529,7 +531,7 @@ function ConcordOutline(container, options) {
 				dataType: "json",
 				success: function(json) {
 					concordInstance.op.clearChanged();
-					if(cb) {
+					if (cb) {
 						cb(json);
 						}
 					}
@@ -540,11 +542,11 @@ function ConcordOutline(container, options) {
 		var openUrl = "http://concordold.smallpicture.com/open";
 		var root = this.root;
 		var concordInstance = this;
-		if(root.data("open")) {
+		if (root.data("open")) {
 			openUrl = root.data("open");
 			}
 		params = {}
-		if(opmlId.match(/^http.+$/)) {
+		if (opmlId.match(/^http.+$/)) {
 			params["url"] = opmlId;
 			} else {
 				params["id"] = opmlId;
@@ -555,7 +557,7 @@ function ConcordOutline(container, options) {
 			data: params,
 			dataType: "xml",
 			success: function(opml) {
-				if(opml) {
+				if (opml) {
 					var cursor = root.find(".concord-cursor:first");
 					$(opml).find("body").children("outline").each(function() {
 						var node = concordInstance.editor.build($(this));
@@ -563,7 +565,7 @@ function ConcordOutline(container, options) {
 						cursor = node;
 						});
 					concordInstance.op.markChanged();
-					if(cb) {
+					if (cb) {
 						cb();
 						}
 					}
@@ -574,7 +576,7 @@ function ConcordOutline(container, options) {
 		};
 	this["export"] = function() {
 		var context = this.root.find(".concord-cursor:first");
-		if(context.length == 0) {
+		if (context.length == 0) {
 			context = this.root.find(".concord-root:first");
 			}
 		return this.editor.opml(context);
@@ -582,7 +584,7 @@ function ConcordOutline(container, options) {
 	this.init();
 	}
 function ConcordEditor(root, concordInstance) {
-	this.makeNode = function(){
+	this.makeNode = function() {
 		var node = $("<li></li>");
 		node.addClass("concord-node");
 		var wrapper = $("<div class='concord-wrapper'></div>");
@@ -603,7 +605,7 @@ function ConcordEditor(root, concordInstance) {
 		root.data("dragging", true);
 		};
 	this.dragModeExit = function() {
-		if(root.data("dragging")) {
+		if (root.data("dragging")) {
 			concordInstance.op.markChanged();
 			root.data("change", root.data("draggingChange"));
 			root.data("changeTextMode", false);
@@ -618,12 +620,12 @@ function ConcordEditor(root, concordInstance) {
 		};
 	this.edit = function(node, empty) {
 		var text = node.children(".concord-wrapper:first").children(".concord-text:first");
-		if(empty) {
+		if (empty) {
 			text.html("");
 			}
 		text.focus();
 		var el = text.get(0);
-		if(el && el.childNodes && el.childNodes[0]){
+		if (el && el.childNodes && el.childNodes[0]) {
 			if (typeof window.getSelection != "undefined" && typeof document.createRange != "undefined") {
 				        var range = document.createRange();
 				        range.selectNodeContents(el);
@@ -639,18 +641,18 @@ function ConcordEditor(root, concordInstance) {
 				    }
 			}
 		text.addClass("editing");
-		if(!empty){
-			if(root.find(".concord-node.dirty").length>0){
+		if (!empty) {
+			if (root.find(".concord-node.dirty").length>0) {
 				concordInstance.op.markChanged();
 				}
 			}
 		};
 	this.editable = function(target) {
 		var editable = false;
-		if(!target.hasClass("concord-text")) {
+		if (!target.hasClass("concord-text")) {
 			target = target.parents(".concord-text:first");
 			}
-		if(target.length == 1) {
+		if (target.length == 1) {
 			editable = target.hasClass("concord-text") && target.hasClass("editing");
 			}
 		return editable;
@@ -669,12 +671,12 @@ function ConcordEditor(root, concordInstance) {
 			flsubsonly = false;
 			}
 		
-		if(_root) {
+		if (_root) {
 			root = _root;
 			}
 		var title = root.data("title");
-		if(!title) {
-			if(root.hasClass("concord-node")) {
+		if (!title) {
+			if (root.hasClass("concord-node")) {
 				title = root.children(".concord-wrapper:first").children(".concord-text:first").text();
 				}
 			else {
@@ -687,7 +689,7 @@ function ConcordEditor(root, concordInstance) {
 		opml += '<title>' + ConcordUtil.escapeXml(title) + '</title>\n';
 		opml += '</head>\n';
 		opml += '<body>\n';
-		if(root.hasClass("concord-cursor")) {
+		if (root.hasClass("concord-cursor")) {
 			opml += this.opmlLine(root, 0, flsubsonly);
 			} else {
 				var editor = this;
@@ -700,7 +702,7 @@ function ConcordEditor(root, concordInstance) {
 		return opml;
 		};
 	this.opmlLine = function(node, indent, flsubsonly) {
-		if(indent==undefined){
+		if (indent==undefined) {
 			indent=0;
 			}
 		
@@ -710,11 +712,11 @@ function ConcordEditor(root, concordInstance) {
 		
 		var text = this.unescape(node.children(".concord-wrapper:first").children(".concord-text:first").html());
 		var textMatches = text.match(/^(.+)<br>\s*$/);
-		if(textMatches){
+		if (textMatches) {
 			text = textMatches[1];
 			}
 		var opml = '';
-		for(var i=0; i < indent;i++){
+		for(var i=0; i < indent;i++) {
 			opml += '\t';
 			}
 		
@@ -722,18 +724,18 @@ function ConcordEditor(root, concordInstance) {
 		if (!flsubsonly) { //8/5/13 by DW
 			opml += '<outline text="' + ConcordUtil.escapeXml(text) + '"';
 			var attributes = node.data("attributes");
-			if(attributes===undefined){
+			if (attributes===undefined) {
 				attributes={};
 				}
-			for(var name in attributes){
-				if((name!==undefined) && (name!="") && (name != "text")) {
-					if(attributes[name]!==undefined){
+			for(var name in attributes) {
+				if ((name!==undefined) && (name!="") && (name != "text")) {
+					if (attributes[name]!==undefined) {
 						opml += ' ' + name + '="' + ConcordUtil.escapeXml(attributes[name]) + '"';
 						}
 					}
 				}
 			subheads = node.children("ol").children(".concord-node");
-			if(subheads.length==0){
+			if (subheads.length==0) {
 				opml+="/>\n";
 				return opml;
 				}
@@ -750,7 +752,7 @@ function ConcordEditor(root, concordInstance) {
 			});
 		
 		if (!flsubsonly) { //8/5/13 by DW
-			for(var i=0; i < indent;i++){
+			for(var i=0; i < indent;i++) {
 				opml += '\t';
 				}
 			opml += '</outline>\n';
@@ -758,12 +760,12 @@ function ConcordEditor(root, concordInstance) {
 		
 		return opml;
 		};
-	this.textLine = function(node, indent){
-		if(!indent){
+	this.textLine = function(node, indent) {
+		if (!indent) {
 			indent = 0;
 			}
 		var text = "";
-		for(var i=0; i < indent;i++){
+		for(var i=0; i < indent;i++) {
 			text += "\t";
 			}
 		text += this.unescape(node.children(".concord-wrapper:first").children(".concord-text:first").html());
@@ -775,37 +777,37 @@ function ConcordEditor(root, concordInstance) {
 		return text;
 		};
 	this.select = function(node, multiple, multipleRange) {
-		if(multiple == undefined) {
+		if (multiple == undefined) {
 			multiple = false;
 			}
-		if(multipleRange == undefined) {
+		if (multipleRange == undefined) {
 			multipleRange = false;
 			}
-		if(node.length == 1) {
+		if (node.length == 1) {
 			this.selectionMode(multiple);
-			if(multiple){
+			if (multiple) {
 				node.parents(".concord-node.selected").removeClass("selected");
 				node.find(".concord-node.selected").removeClass("selected");
 				}
-			if(multiple && multipleRange) {
+			if (multiple && multipleRange) {
 				var prevNodes = node.prevAll(".selected");
-				if(prevNodes.length > 0) {
+				if (prevNodes.length > 0) {
 					var stamp = false;
 					node.prevAll().reverse().each(function() {
-						if($(this).hasClass("selected")) {
+						if ($(this).hasClass("selected")) {
 							stamp = true;
-							} else if(stamp) {
+							} else if (stamp) {
 								$(this).addClass("selected");
 								}
 						});
 					} else {
 						var nextNodes = node.nextAll(".selected");
-						if(nextNodes.length > 0) {
+						if (nextNodes.length > 0) {
 							var stamp = true;
 							node.nextAll().each(function() {
-								if($(this).hasClass("selected")) {
+								if ($(this).hasClass("selected")) {
 									stamp = false;
-									} else if(stamp) {
+									} else if (stamp) {
 										$(this).addClass("selected");
 										}
 								});
@@ -813,38 +815,38 @@ function ConcordEditor(root, concordInstance) {
 						}
 				}
 			var text = node.children(".concord-wrapper:first").children(".concord-text:first");
-			if(text.hasClass("editing")) {
+			if (text.hasClass("editing")) {
 				text.removeClass("editing");
 				}
 			//text.blur();
 			node.addClass("selected");
-			if(text.text().length>0){
+			if (text.text().length>0) {
 				//root.data("currentChange", root.children().clone());
 				}
 			this.dragModeExit();
 			}
-		if(root.find(".concord-node.dirty").length>0){
+		if (root.find(".concord-node.dirty").length>0) {
 			concordInstance.op.markChanged();
 			}
 		};
 	this.selectionMode = function(multiple) {
-		if(multiple == undefined) {
+		if (multiple == undefined) {
 			multiple = false;
 			}
 		var node = root.find(".concord-cursor");
-		if(node.length == 1) {
+		if (node.length == 1) {
 			var text = node.children(".concord-wrapper:first").children(".concord-text:first");
-			if(text.length == 1) {
+			if (text.length == 1) {
 				//text.blur();
 				}
 			}
-		if(!multiple) {
+		if (!multiple) {
 			root.find(".selected").removeClass("selected");
 			}
 		root.find(".selection-toolbar").remove();
 		};
 	this.build = function(outline,collapsed, level, flInsertRawHtml) { //9/18/20 by DW -- new optional param, flInsertRawHtml
-		if(!level){
+		if (!level) {
 			level = 1;
 			}
 		var node = $("<li></li>");
@@ -852,9 +854,9 @@ function ConcordEditor(root, concordInstance) {
 		node.addClass("concord-level-"+level);
 		var attributes = {};
 		$(outline[0].attributes).each(function() {
-			if(this.name != 'text') {
+			if (this.name != 'text') {
 				attributes[this.name] = this.value;
-				if(this.name=="type"){
+				if (this.name=="type") {
 					node.attr("opml-" + this.name, this.value);
 					}
 				}
@@ -862,21 +864,21 @@ function ConcordEditor(root, concordInstance) {
 		node.data("attributes", attributes);
 		var wrapper = $("<div class='concord-wrapper'></div>");
 		var nodeIcon = attributes["icon"];
-		if(!nodeIcon){
+		if (!nodeIcon) {
 			nodeIcon = attributes["type"];
 			}
 		var iconName="caret-right";
-		if(nodeIcon){
-			if((nodeIcon==node.attr("opml-type")) && concordInstance.prefs() && concordInstance.prefs().typeIcons && concordInstance.prefs().typeIcons[nodeIcon]){
+		if (nodeIcon) {
+			if ((nodeIcon==node.attr("opml-type")) && concordInstance.prefs() && concordInstance.prefs().typeIcons && concordInstance.prefs().typeIcons[nodeIcon]) {
 				iconName = concordInstance.prefs().typeIcons[nodeIcon];
-				}else if (nodeIcon==attributes["icon"]){
+				}else if (nodeIcon==attributes["icon"]) {
 					iconName = nodeIcon;
 					}
 			}
 		var icon = ConcordUtil.getIconHtml (iconName);
 		wrapper.append(icon);
 		wrapper.addClass("type-icon");
-		if(attributes["isComment"]=="true"){
+		if (attributes["isComment"]=="true") {
 			node.addClass("concord-comment");
 			}
 		var text = $("<div class='concord-text' contenteditable='true'></div>");
@@ -892,9 +894,9 @@ function ConcordEditor(root, concordInstance) {
 				}
 			text.html (textToInsert);
 		
-		if(attributes["cssTextClass"]!==undefined){
+		if (attributes["cssTextClass"]!==undefined) {
 			var cssClasses = attributes["cssTextClass"].split(/\s+/);
-			for(var c in cssClasses){
+			for(var c in cssClasses) {
 				var newClass = cssClasses[c];
 				text.addClass(newClass);
 				}
@@ -905,8 +907,8 @@ function ConcordEditor(root, concordInstance) {
 			var child = editor.build($(this), collapsed, level+1, flInsertRawHtml);
 			child.appendTo(children);
 			});
-		if(collapsed){
-			if(outline.children("outline").size()>0){
+		if (collapsed) {
+			if (outline.children("outline").size()>0) {
 				node.addClass("collapsed");
 				}
 			}
@@ -915,50 +917,50 @@ function ConcordEditor(root, concordInstance) {
 		children.appendTo(node);
 		return node;
 		};
-	this.hideContextMenu = function(){
-		if(root.data("dropdown")){
+	this.hideContextMenu = function() {
+		if (root.data("dropdown")) {
 			root.data("dropdown").hide();
 			root.data("dropdown").remove();
 			root.removeData("dropdown");
 			}
 		};
-	this.showContextMenu = function(x,y){
-		if(concordInstance.prefs().contextMenu){
+	this.showContextMenu = function(x,y) {
+		if (concordInstance.prefs().contextMenu) {
 			this.hideContextMenu();
 			root.data("dropdown", $(concordInstance.prefs().contextMenu).clone().appendTo(concordInstance.container));
 			var editor = this;
-			root.data("dropdown").on("click", "a", function(event){
+			root.data("dropdown").on("click", "a", function(event) {
 				editor.hideContextMenu();
 				});
 			root.data("dropdown").css({"position" : "absolute", "top" : y +"px", "left" : x + "px", "cursor" : "default"});
 			root.data("dropdown").show();
 			}
 		};
-	this.sanitize = function(){
+	this.sanitize = function() {
 		var editor = this;
-		root.find(".concord-text.paste").each(function(){
+		root.find(".concord-text.paste").each(function() {
 			var concordText = $(this);
-			if(concordInstance.pasteBin.text()=="..."){
+			if (concordInstance.pasteBin.text()=="...") {
 				return;
 				}
 			var h = concordInstance.pasteBin.html();
 			h = h.replace(new RegExp("<(div|p|blockquote|pre|li|br|dd|dt|code|h\\d)[^>]*(/)?>","gi"),"\n");
 			h = $("<div/>").html(h).text();
 			var clipboardMatch = false;
-			if(concordClipboard !== undefined){
+			if (concordClipboard !== undefined) {
 				var trimmedClipboardText = concordClipboard.text.replace(/^[\s\r\n]+|[\s\r\n]+$/g,'');
 				var trimmedPasteText = h.replace(/^[\s\r\n]+|[\s\r\n]+$/g,'');
-				if(trimmedClipboardText==trimmedPasteText){
+				if (trimmedClipboardText==trimmedPasteText) {
 					var clipboardNodes = concordClipboard.data;
-					if(clipboardNodes){
-						var collapseNode = function(node){
+					if (clipboardNodes) {
+						var collapseNode = function(node) {
 							node.find("ol").each(function() {
-								if($(this).children().length > 0) {
+								if ($(this).children().length > 0) {
 									$(this).parent().addClass("collapsed");
 									}
 								});
 							};
-						clipboardNodes.each(function(){
+						clipboardNodes.each(function() {
 							collapseNode($(this));
 							});
 						root.data("clipboard", clipboardNodes);
@@ -968,29 +970,29 @@ function ConcordEditor(root, concordInstance) {
 						}
 					}
 				}
-			if(!clipboardMatch){
+			if (!clipboardMatch) {
 				concordClipboard = undefined;
 				var numberoflines = 0;
 				var lines = h.split("\n");
-				for(var i = 0; i < lines.length; i++){
+				for(var i = 0; i < lines.length; i++) {
 					var line = lines[i];
-					if((line!="") && !line.match(/^\s+$/)){
+					if ((line!="") && !line.match(/^\s+$/)) {
 						numberoflines++;
 						}
 					}
-				if(!concordInstance.op.inTextMode() || (numberoflines > 1)){
+				if (!concordInstance.op.inTextMode() || (numberoflines > 1)) {
 					concordInstance.op.insertText(h);
-					}else{
+					} else {
 						concordInstance.op.saveState();
 						concordText.focus();
 						var range = concordText.parents(".concord-node:first").data("range");
-						if(range){
+						if (range) {
 							try{
 								var sel = window.getSelection();
 								sel.removeAllRanges();
 								sel.addRange(range);
 								}
-							catch(e){
+							catch(e) {
 								console.log(e);
 								}
 							finally {
@@ -1005,17 +1007,17 @@ function ConcordEditor(root, concordInstance) {
 			concordText.removeClass("paste");
 			});
 		};
-	this.escape = function(s){
+	this.escape = function(s) {
 		var h = $("<div/>").text(s).html();
 		h = h.replace(/\u00A0/g, " ");
-		if(concordInstance.op.getRenderMode()){ // Render HTML if op.getRenderMode() returns true - 2/17/13 by KS
+		if (concordInstance.op.getRenderMode()) { // Render HTML if op.getRenderMode() returns true - 2/17/13 by KS
 			var allowedTags = ["b","strong","i","em","a","img","strike","del"];
-			for(var tagIndex in allowedTags){
+			for(var tagIndex in allowedTags) {
 				var tag = allowedTags[tagIndex];
-				if (tag == "img"){
+				if (tag == "img") {
 					h = h.replace(new RegExp("&lt;"+tag+"((?!&gt;).+)(/)?&gt;","gi"),"<"+tag+"$1"+"/>");
 					}
-				else if (tag=="a"){
+				else if (tag=="a") {
 					h = h.replace(new RegExp("&lt;"+tag+"((?!&gt;).*?)&gt;((?!&lt;/"+tag+"&gt;).+?)&lt;/"+tag+"&gt;","gi"),"<"+tag+"$1"+">$2"+"<"+"/"+tag+">");
 					}
 				else {
@@ -1025,38 +1027,38 @@ function ConcordEditor(root, concordInstance) {
 			}
 		return h;
 		};
-	this.unescape = function(s){
+	this.unescape = function(s) {
 		var h = s.replace(/</g,"&lt;").replace(/>/g,"&gt;");
 		h = $("<div/>").html(h).text();
 		return h;
 		};
-	this.getSelection = function(){
+	this.getSelection = function() {
 		var range = undefined;
-		if(window.getSelection){
+		if (window.getSelection) {
 			sel = window.getSelection();
-			if(sel.getRangeAt && sel.rangeCount){
+			if (sel.getRangeAt && sel.rangeCount) {
 				range = sel.getRangeAt(0);
-				if($(range.startContainer).parents(".concord-node:first").length==0){
+				if ($(range.startContainer).parents(".concord-node:first").length==0) {
 					range = undefined;
 					}
 				}
 			}
 		return range;
 		};
-	this.saveSelection = function(){
+	this.saveSelection = function() {
 		var range = this.getSelection();
-		if(range !== undefined){
+		if (range !== undefined) {
 			concordInstance.op.getCursor().data("range", range.cloneRange());
 			}
 		return range;
 		};
-	this.restoreSelection = function(range){
+	this.restoreSelection = function(range) {
 		var cursor = concordInstance.op.getCursor();
-		if(range===undefined){
+		if (range===undefined) {
 			range = cursor.data("range");
 			}
-		if(range !== undefined){
-			if(window.getSelection){
+		if (range !== undefined) {
+			if (window.getSelection) {
 				var concordText = cursor.children(".concord-wrapper").children(".concord-text");
 				try{
 					var cloneRanger = range.cloneRange();
@@ -1064,7 +1066,7 @@ function ConcordEditor(root, concordInstance) {
 					sel.removeAllRanges();
 					sel.addRange(cloneRanger);
 					}
-				catch(e){
+				catch(e) {
 					console.log(e);
 					}
 				finally {
@@ -1074,14 +1076,14 @@ function ConcordEditor(root, concordInstance) {
 			}
 		return range;
 		};
-	this.recalculateLevels = function(context){
-		if(!context){
+	this.recalculateLevels = function(context) {
+		if (!context) {
 			context = root.find(".concord-node");
 			}
-		context.each(function(){
+		context.each(function() {
 			var text = $(this).children(".concord-wrapper").children(".concord-text");
 			var levelMatch = $(this).attr("class").match(/.*concord-level-(\d+).*/);
-			if(levelMatch){
+			if (levelMatch) {
 				$(this).removeClass("concord-level-"+levelMatch[1]);
 				text.removeClass("concord-level-"+levelMatch[1]+"-text");
 				}
@@ -1094,23 +1096,23 @@ function ConcordEditor(root, concordInstance) {
 function ConcordEvents(root, editor, op, concordInstance) {
 	var instance = this;
 	this.wrapperDoubleClick = function(event) {
-		if(!concord.handleEvents){
+		if (!concord.handleEvents) {
 			return;
 			}
-		if(root.data("dropdown")){
+		if (root.data("dropdown")) {
 			editor.hideContextMenu();
 			return;
 			}
-		if(!editor.editable($(event.target))) {
+		if (!editor.editable($(event.target))) {
 			var wrapper = $(event.target);
-			if(wrapper.hasClass("node-icon")){
+			if (wrapper.hasClass("node-icon")) {
 				wrapper = wrapper.parent();
 				}
-			if(wrapper.hasClass("concord-wrapper")) {
+			if (wrapper.hasClass("concord-wrapper")) {
 				event.stopPropagation();
 				var node = wrapper.parents(".concord-node:first");
 				op.setTextMode(false);
-				if(op.subsExpanded()) {
+				if (op.subsExpanded()) {
 					op.collapse();
 					} else {
 						op.expand();
@@ -1119,29 +1121,29 @@ function ConcordEvents(root, editor, op, concordInstance) {
 			}
 		};
 	this.clickSelect = function(event) {
-		if(!concord.handleEvents){
+		if (!concord.handleEvents) {
 			return;
 			}
-		if(root.data("dropdown")){
+		if (root.data("dropdown")) {
 			event.stopPropagation();
 			editor.hideContextMenu();
 			return;
 			}
-		if(concord.mobile){
+		if (concord.mobile) {
 			var node = $(event.target);
-			if(concordInstance.op.getCursor()[0]===node[0]){
+			if (concordInstance.op.getCursor()[0]===node[0]) {
 				instance.doubleClick(event);
 				return;
 				}
 			}
-		if((event.which==1) && !editor.editable($(event.target))) {
+		if ((event.which==1) && !editor.editable($(event.target))) {
 			var node = $(event.target);
-			if(!node.hasClass("concord-node")){
+			if (!node.hasClass("concord-node")) {
 				return;
 				}
-			if(node.length==1) {
+			if (node.length==1) {
 				event.stopPropagation();
-				if(event.shiftKey && (node.parents(".concord-node.selected").length>0)){
+				if (event.shiftKey && (node.parents(".concord-node.selected").length>0)) {
 					return;
 					}
 				op.setTextMode(false);
@@ -1150,20 +1152,20 @@ function ConcordEvents(root, editor, op, concordInstance) {
 			}
 		};
 	this.doubleClick = function(event) {
-		if(!concord.handleEvents){
+		if (!concord.handleEvents) {
 			return;
 			}
-		if(root.data("dropdown")){
+		if (root.data("dropdown")) {
 			editor.hideContextMenu();
 			return;
 			}
-		if(!editor.editable($(event.target))) {
+		if (!editor.editable($(event.target))) {
 			var node = $(event.target);
-			if(node.hasClass("concord-node") && node.hasClass("concord-cursor")) {
+			if (node.hasClass("concord-node") && node.hasClass("concord-cursor")) {
 				event.stopPropagation();
 				op.setTextMode(false);
 				op.setCursor(node);
-				if(op.subsExpanded()) {
+				if (op.subsExpanded()) {
 					op.collapse();
 					} else {
 						op.expand();
@@ -1172,29 +1174,29 @@ function ConcordEvents(root, editor, op, concordInstance) {
 			}
 		};
 	this.wrapperClickSelect = function(event) {
-		if(!concord.handleEvents){
+		if (!concord.handleEvents) {
 			return;
 			}
-		if(root.data("dropdown")){
+		if (root.data("dropdown")) {
 			editor.hideContextMenu();
 			return;
 			}
-		if(concord.mobile){
+		if (concord.mobile) {
 			var target = $(event.target);
 			var node = target.parents(".concord-node:first");
-			if(concordInstance.op.getCursor()[0]===node[0]){
+			if (concordInstance.op.getCursor()[0]===node[0]) {
 				instance.wrapperDoubleClick(event);
 				return;
 				}
 			}
-		if((event.which==1) && !editor.editable($(event.target))) {
+		if ((event.which==1) && !editor.editable($(event.target))) {
 			var wrapper = $(event.target);
-			if(wrapper.hasClass("node-icon")){
+			if (wrapper.hasClass("node-icon")) {
 				wrapper = wrapper.parent();
 				}
-			if(wrapper.hasClass("concord-wrapper")) {
+			if (wrapper.hasClass("concord-wrapper")) {
 				var node = wrapper.parents(".concord-node:first");
-				if(event.shiftKey && (node.parents(".concord-node.selected").length>0)){
+				if (event.shiftKey && (node.parents(".concord-node.selected").length>0)) {
 					return;
 					}
 				op.setTextMode(false);
@@ -1202,17 +1204,17 @@ function ConcordEvents(root, editor, op, concordInstance) {
 				}
 			}
 		};
-	this.contextmenu = function(event){
-		if(!concord.handleEvents){
+	this.contextmenu = function(event) {
+		if (!concord.handleEvents) {
 			return;
 			}
 		event.preventDefault();
 		event.stopPropagation();
 		var node = $(event.target);
-		if(node.hasClass("concord-wrapper") || node.hasClass("node-icon")){
+		if (node.hasClass("concord-wrapper") || node.hasClass("node-icon")) {
 			op.setTextMode(false);
 			}
-		if(!node.hasClass("concord-node")){
+		if (!node.hasClass("concord-node")) {
 			node = node.parents(".concord-node:first");
 			}
 		concordInstance.fireCallback("opContextMenu", op.setCursorContext(node));
@@ -1221,16 +1223,16 @@ function ConcordEvents(root, editor, op, concordInstance) {
 		};
 	root.on("dblclick", ".concord-wrapper", this.wrapperDoubleClick);
 	root.on("dblclick", ".concord-node", this.doubleClick);
-	root.on("dblclick", ".concord-text", function(event){
-		if(!concord.handleEvents){
+	root.on("dblclick", ".concord-text", function(event) {
+		if (!concord.handleEvents) {
 			return;
 			}
-		if(concordInstance.prefs()["readonly"]==true){
+		if (concordInstance.prefs()["readonly"]==true) {
 			event.preventDefault();
 			event.stopPropagation();
 			var node = $(event.target).parents(".concord-node:first");
 			op.setCursor(node);
-			if(op.subsExpanded()) {
+			if (op.subsExpanded()) {
 				op.collapse();
 				} else {
 					op.expand();
@@ -1239,42 +1241,42 @@ function ConcordEvents(root, editor, op, concordInstance) {
 		});
 	root.on("click", ".concord-wrapper", this.wrapperClickSelect);
 	root.on("click", ".concord-node", this.clickSelect);
-	root.on("mouseover", ".concord-wrapper", function(event){
-		if(!concord.handleEvents){
+	root.on("mouseover", ".concord-wrapper", function(event) {
+		if (!concord.handleEvents) {
 			return;
 			}
 		var node = $(event.target).parents(".concord-node:first");
 		concordInstance.fireCallback("opHover", op.setCursorContext(node));
 		});
-	if(concordInstance.prefs.contextMenu){
+	if (concordInstance.prefs.contextMenu) {
 		root.on("contextmenu", ".concord-text", this.contextmenu);
 		root.on("contextmenu", ".concord-node", this.contextmenu);
 		root.on("contextmenu", ".concord-wrapper", this.contextmenu);
 		}
-	root.on("blur", ".concord-text", function(event){
-		if(!concord.handleEvents){
+	root.on("blur", ".concord-text", function(event) {
+		if (!concord.handleEvents) {
 			return;
 			}
-		if(concordInstance.prefs()["readonly"]==true){
+		if (concordInstance.prefs()["readonly"]==true) {
 			return;
 			}
-		if($(this).html().match(/^\s*<br>\s*$/)){
+		if ($(this).html().match(/^\s*<br>\s*$/)) {
 			$(this).html("");
 			}
 		var concordText = $(this);
 		var node = $(this).parents(".concord-node:first");
-		if(concordInstance.op.inTextMode()){
+		if (concordInstance.op.inTextMode()) {
 			editor.saveSelection();
 			}
-		if(concordInstance.op.inTextMode() && node.hasClass("dirty")){
+		if (concordInstance.op.inTextMode() && node.hasClass("dirty")) {
 			node.removeClass("dirty");
 			}
 		});
-	root.on("paste", ".concord-text", function(event){
-		if(!concord.handleEvents){
+	root.on("paste", ".concord-text", function(event) {
+		if (!concord.handleEvents) {
 			return;
 			}
-		if(concordInstance.prefs()["readonly"]==true){
+		if (concordInstance.prefs()["readonly"]==true) {
 			return;
 			}
 		$(this).addClass("paste");
@@ -1283,26 +1285,26 @@ function ConcordEvents(root, editor, op, concordInstance) {
 		concordInstance.pasteBin.focus();
 		setTimeout(editor.sanitize,10);
 		});
-	concordInstance.pasteBin.on("copy", function(){
-		if(!concord.handleEvents){
+	concordInstance.pasteBin.on("copy", function() {
+		if (!concord.handleEvents) {
 			return;
 			}
 		var copyText = "";
-		root.find(".selected").each(function(){
+		root.find(".selected").each(function() {
 			copyText+= concordInstance.editor.textLine($(this));
 			});
-		if((copyText!="") && (copyText!="\n")){
+		if ((copyText!="") && (copyText!="\n")) {
 			concordClipboard = {text: copyText, data: root.find(".selected").clone(true, true)};
 			concordInstance.pasteBin.html("<pre>"+$("<div/>").text(copyText).html()+"</pre>");
 			concordInstance.pasteBin.focus();
 			document.execCommand("selectAll");
 			}
 		});
-	concordInstance.pasteBin.on("paste", function(event){
-		if(!concord.handleEvents){
+	concordInstance.pasteBin.on("paste", function(event) {
+		if (!concord.handleEvents) {
 			return;
 			}
-		if(concordInstance.prefs()["readonly"]==true){
+		if (concordInstance.prefs()["readonly"]==true) {
 			return;
 			}
 		var concordText = concordInstance.op.getCursor().children(".concord-wrapper").children(".concord-text");
@@ -1310,140 +1312,140 @@ function ConcordEvents(root, editor, op, concordInstance) {
 		concordInstance.pasteBin.html("");
 		setTimeout(editor.sanitize,10);
 		});
-	concordInstance.pasteBin.on("cut", function(){
-		if(!concord.handleEvents){
+	concordInstance.pasteBin.on("cut", function() {
+		if (!concord.handleEvents) {
 			return;
 			}
-		if(concordInstance.prefs()["readonly"]==true){
+		if (concordInstance.prefs()["readonly"]==true) {
 			return;
 			}
 		var copyText = "";
-		root.find(".selected").each(function(){
+		root.find(".selected").each(function() {
 			copyText+= concordInstance.editor.textLine($(this));
 			});
-		if((copyText!="") && (copyText!="\n")){
+		if ((copyText!="") && (copyText!="\n")) {
 			concordClipboard = {text: copyText, data: root.find(".selected").clone(true, true)};
 			concordInstance.pasteBin.html("<pre>"+$("<div/>").text(copyText).html()+"</pre>");
 			concordInstance.pasteBinFocus();
 			}
 		concordInstance.op.deleteLine();
-		setTimeout(function(){concordInstance.pasteBinFocus()}, 200);
+		setTimeout(function() {concordInstance.pasteBinFocus()}, 200);
 		});
 	root.on("mousedown", function(event) {
-		if(!concord.handleEvents){
+		if (!concord.handleEvents) {
 			return;
 			}
 		var target = $(event.target);
-		if(target.is("a")){
-			if(target.attr("href")){
+		if (target.is("a")) {
+			if (target.attr("href")) {
 				event.preventDefault();
 				window.open(target.attr("href"));
 				}
 			return;
 			}
-		if(concordInstance.prefs()["readonly"]==true){
+		if (concordInstance.prefs()["readonly"]==true) {
 			event.preventDefault();
 			var target = $(event.target);
-			if(target.parents(".concord-text:first").length==1){
+			if (target.parents(".concord-text:first").length==1) {
 				target = target.parents(".concord-text:first");
 				}
-			if(target.hasClass("concord-text")){
+			if (target.hasClass("concord-text")) {
 				var node = target.parents(".concord-node:first");
-				if(node.length==1){
+				if (node.length==1) {
 					op.setCursor(node);
 					}
 				}
 			return;
 			}
-		if(event.which==1) {
-			if(root.data("dropdown")){
+		if (event.which==1) {
+			if (root.data("dropdown")) {
 				editor.hideContextMenu();
 				return;
 				}
-			if(target.parents(".concord-text:first").length==1){
+			if (target.parents(".concord-text:first").length==1) {
 				target = target.parents(".concord-text:first");
 				}
-			if(target.hasClass("concord-text")){
+			if (target.hasClass("concord-text")) {
 				var node = target.parents(".concord-node:first");
-				if(node.length==1){
-					if(!root.hasClass("textMode")){
+				if (node.length==1) {
+					if (!root.hasClass("textMode")) {
 						root.find(".selected").removeClass("selected");
 						root.addClass("textMode");
 						}
-					if(node.children(".concord-wrapper").children(".concord-text").hasClass("editing")){
+					if (node.children(".concord-wrapper").children(".concord-text").hasClass("editing")) {
 						root.find(".editing").removeClass("editing");
 						node.children(".concord-wrapper").children(".concord-text").addClass("editing");
 						}
-					if(!node.hasClass("concord-cursor")){
+					if (!node.hasClass("concord-cursor")) {
 						root.find(".concord-cursor").removeClass("concord-cursor");
 						node.addClass("concord-cursor");
 						concordInstance.fireCallback("opCursorMoved", op.setCursorContext(node));
 						}
 					}
-				}else{
+				} else {
 					event.preventDefault();
 					root.data("mousedown", true);
 					}
 			}
 		});
 	root.on("mousemove", function(event) {
-		if(!concord.handleEvents){
+		if (!concord.handleEvents) {
 			return;
 			}
-		if(concordInstance.prefs()["readonly"]==true){
+		if (concordInstance.prefs()["readonly"]==true) {
 			return;
 			}
-		if(!editor.editable($(event.target))) {
+		if (!editor.editable($(event.target))) {
 			event.preventDefault();
-			if(root.data("mousedown") && !root.data("dragging")) {
+			if (root.data("mousedown") && !root.data("dragging")) {
 				var target = $(event.target);
-				if(target.hasClass("node-icon")){
+				if (target.hasClass("node-icon")) {
 					target = target.parent();
 					}
-				if(target.hasClass("concord-wrapper") && target.parent().hasClass("selected")) {
+				if (target.hasClass("concord-wrapper") && target.parent().hasClass("selected")) {
 					editor.dragMode();
 					}
 				}
 			}
 		});
 	root.on("mouseup", function(event) {
-		if(!concord.handleEvents){
+		if (!concord.handleEvents) {
 			return;
 			}
-		if(concordInstance.prefs()["readonly"]==true){
+		if (concordInstance.prefs()["readonly"]==true) {
 			return;
 			}
 		var target = $(event.target);
-		if(target.hasClass("concord-node")) {
+		if (target.hasClass("concord-node")) {
 			target = target.children(".concord-wrapper:first").children(".concord-text:first");
-			} else if(target.hasClass("concord-wrapper")) {
+			} else if (target.hasClass("concord-wrapper")) {
 				target = target.children(".concord-text:first");
 				}
-		if(!editor.editable(target)) {
+		if (!editor.editable(target)) {
 			root.data("mousedown", false);
-			if(root.data("dragging")) {
+			if (root.data("dragging")) {
 				var target = $(event.target);
 				var node = target.parents(".concord-node:first");
 				var draggable = root.find(".selected");
-				if((node.length == 1) && (draggable.length >= 1)) {
+				if ((node.length == 1) && (draggable.length >= 1)) {
 					var isDraggableTarget = false;
-					draggable.each(function(){
-						if(this==node[0]){
+					draggable.each(function() {
+						if (this==node[0]) {
 							isDraggableTarget = true;
 							}
 						});
-					if(!isDraggableTarget) {
+					if (!isDraggableTarget) {
 						var draggableIsTargetParent = false;
 						node.parents(".concord-node").each(function() {
 							var nodeParent = $(this)[0];
-							draggable.each(function(){
-								if($(this)[0] == nodeParent) {
+							draggable.each(function() {
+								if ($(this)[0] == nodeParent) {
 									draggableIsTargetParent = true;
 									}
 								});
 							});
-						if(!draggableIsTargetParent) {
-							if(target.hasClass("concord-wrapper") || target.hasClass("node-icon")) {
+						if (!draggableIsTargetParent) {
+							if (target.hasClass("concord-wrapper") || target.hasClass("node-icon")) {
 								var clonedDraggable = draggable.clone(true, true);
 								clonedDraggable.insertAfter(node);
 								draggable.remove();
@@ -1457,8 +1459,8 @@ function ConcordEvents(root, editor, op, concordInstance) {
 							}
 						} else {
 							var prev = node.prev();
-							if(prev.length == 1) {
-								if(prev.hasClass("drop-child")) {
+							if (prev.length == 1) {
+								if (prev.hasClass("drop-child")) {
 									var clonedDraggable = draggable.clone(true, true);
 									var outline = prev.children("ol");
 									clonedDraggable.appendTo(outline);
@@ -1474,45 +1476,45 @@ function ConcordEvents(root, editor, op, concordInstance) {
 			}
 		});
 	root.on("mouseover", function(event) {
-		if(!concord.handleEvents){
+		if (!concord.handleEvents) {
 			return;
 			}
-		if(concordInstance.prefs()["readonly"]==true){
+		if (concordInstance.prefs()["readonly"]==true) {
 			return;
 			}
-		if(root.data("dragging")) {
+		if (root.data("dragging")) {
 			event.preventDefault();
 			var target = $(event.target);
 			var node = target.parents(".concord-node:first");
 			var draggable = root.find(".selected");
-			if((node.length == 1) && (draggable.length>=1)) {
+			if ((node.length == 1) && (draggable.length>=1)) {
 				var isDraggableTarget = false;
-				draggable.each(function(){
-					if(this==node[0]){
+				draggable.each(function() {
+					if (this==node[0]) {
 						isDraggableTarget = true;
 						}
 					});
-				if(!isDraggableTarget) {
+				if (!isDraggableTarget) {
 					var draggableIsTargetParent = false;
 					node.parents(".concord-node").each(function() {
 						var nodeParent = $(this)[0];
-						draggable.each(function(){
-							if($(this)[0] == nodeParent) {
+						draggable.each(function() {
+							if ($(this)[0] == nodeParent) {
 								draggableIsTargetParent = true;
 								}
 							});
 						});
-					if(!draggableIsTargetParent) {
+					if (!draggableIsTargetParent) {
 						node.removeClass("drop-sibling").remove("drop-child");
-						if(target.hasClass("concord-wrapper") || target.hasClass("node-icon")) {
+						if (target.hasClass("concord-wrapper") || target.hasClass("node-icon")) {
 							node.addClass("drop-sibling");
 							} else {
 								node.addClass("drop-child");
 								}
 						}
-					} else if (draggable.length==1){
+					} else if (draggable.length==1) {
 						var prev = node.prev();
-						if(prev.length == 1) {
+						if (prev.length == 1) {
 							prev.removeClass("drop-sibling").remove("drop-child");
 							prev.addClass("drop-child");
 							}
@@ -1521,13 +1523,13 @@ function ConcordEvents(root, editor, op, concordInstance) {
 			}
 		});
 	root.on("mouseout", function(event) {
-		if(!concord.handleEvents){
+		if (!concord.handleEvents) {
 			return;
 			}
-		if(concordInstance.prefs()["readonly"]==true){
+		if (concordInstance.prefs()["readonly"]==true) {
 			return;
 			}
-		if(root.data("dragging")) {
+		if (root.data("dragging")) {
 			root.find(".drop-sibling").removeClass("drop-sibling");
 			root.find(".drop-child").removeClass("drop-child");
 			}
@@ -1536,9 +1538,9 @@ function ConcordEvents(root, editor, op, concordInstance) {
 function ConcordOp(root, concordInstance, _cursor) {
 	this._walk_up = function(context) {
 		var prev = context.prev();
-		if(prev.length == 0) {
+		if (prev.length == 0) {
 			var parent = context.parents(".concord-node:first");
-			if(parent.length == 1) {
+			if (parent.length == 1) {
 				return parent;
 				} else {
 					return null;
@@ -1549,11 +1551,11 @@ function ConcordOp(root, concordInstance, _cursor) {
 		};
 	this._walk_down = function(context) {
 		var next = context.next();
-		if(next.length == 1) {
+		if (next.length == 1) {
 			return next;
 			} else {
 				var parent = context.parents(".concord-node:first");
-				if(parent.length == 1) {
+				if (parent.length == 1) {
 					return this._walk_down(parent);
 					} else {
 						return null;
@@ -1561,26 +1563,26 @@ function ConcordOp(root, concordInstance, _cursor) {
 				}
 		};
 	this._last_child = function(context) {
-		if(context.hasClass("collapsed")) {
+		if (context.hasClass("collapsed")) {
 			return context;
 			}
 		var outline = context.children("ol");
-		if(outline.length == 0) {
+		if (outline.length == 0) {
 			return context;
 			} else {
 				var lastChild = outline.children(".concord-node:last");
-				if(lastChild.length == 1) {
+				if (lastChild.length == 1) {
 					return this._last_child(lastChild);
 				} else {
 					return context;
 				}
 				}
 		};
-	this.bold = function(){
+	this.bold = function() {
 		this.saveState();
-		if(this.inTextMode()){
+		if (this.inTextMode()) {
 			document.execCommand("bold");
-			}else{
+			} else {
 				this.focusCursor();
 				document.execCommand("selectAll");
 				document.execCommand("bold");
@@ -1598,41 +1600,41 @@ function ConcordOp(root, concordInstance, _cursor) {
 		return true;
 		};
 	this.collapse = function(triggerCallbacks) {
-		if(triggerCallbacks == undefined){
+		if (triggerCallbacks == undefined) {
 			triggerCallbacks = true;
 			}
 		var node = this.getCursor();
-		if(node.length == 1) {
-			if(triggerCallbacks){
+		if (node.length == 1) {
+			if (triggerCallbacks) {
 				concordInstance.fireCallback("opCollapse", this.setCursorContext(node));
 				}
 			node.addClass("collapsed");
 			node.find("ol").each(function() {
-				if($(this).children().length > 0) {
+				if ($(this).children().length > 0) {
 					$(this).parent().addClass("collapsed");
 					}
 				});
 			this.markChanged();
 			}
 		};
-	this.copy = function(){
-		if(!this.inTextMode()){
+	this.copy = function() {
+		if (!this.inTextMode()) {
 			root.data("clipboard", root.find(".selected").clone(true, true));
 			}
 		};
 	this.countSubs = function() {
 		var node = this.getCursor();
-		if(node.length == 1) {
+		if (node.length == 1) {
 			return node.children("ol").children().size();
 			}
 		return 0;
 		};
-	this.cursorToXml = function(){
+	this.cursorToXml = function() {
 		return concordInstance.editor.opml(this.getCursor());
 		};
 	
 	
-	this.cursorToXmlSubsOnly = function(){ //8/5/13 by DW
+	this.cursorToXmlSubsOnly = function() { //8/5/13 by DW
 		return concordInstance.editor.opml(this.getCursor(), true);
 		};
 	this.getNodeOpml = function (node) { //3/12/14 by DW
@@ -1640,60 +1642,60 @@ function ConcordOp(root, concordInstance, _cursor) {
 		};
 	
 	
-	this.cut = function(){
-		if(!this.inTextMode()){
+	this.cut = function() {
+		if (!this.inTextMode()) {
 			this.copy();
 			this.deleteLine();
 			}
 		};
 	this.deleteLine = function() {
 		this.saveState();
-		if(this.inTextMode()){
+		if (this.inTextMode()) {
 			var cursor = this.getCursor();
 			var p = cursor.prev();
-			if(p.length==0){
+			if (p.length==0) {
 				p = cursor.parents(".concord-node:first");
 				}
 			cursor.remove();
-			if(p.length==1) {
+			if (p.length==1) {
 				this.setCursor(p);
 				} else {
-					if(root.find(".concord-node:first").length==1) {
+					if (root.find(".concord-node:first").length==1) {
 						this.setCursor(root.find(".concord-node:first"));
 						} else {
 							this.wipe();
 							}
 					}
-			}else{
+			} else {
 				var selected = root.find(".selected");
-				if(selected.length == 1) {
+				if (selected.length == 1) {
 					var p = selected.prev();
-					if(p.length==0){
+					if (p.length==0) {
 						p = selected.parents(".concord-node:first");
 						}
 					selected.remove();
-					if(p.length==1) {
+					if (p.length==1) {
 						this.setCursor(p);
 						} else {
-							if(root.find(".concord-node:first").length==1) {
+							if (root.find(".concord-node:first").length==1) {
 								this.setCursor(root.find(".concord-node:first"));
 								} else {
 									this.wipe();
 									}
 							}
-					} else if(selected.length > 1) {
+					} else if (selected.length > 1) {
 						var first = root.find(".selected:first");
 						var p = first.prev();
-						if(p.length==0){
+						if (p.length==0) {
 							p = first.parents(".concord-node:first");
 							}
 						selected.each(function() {
 							$(this).remove();
 							});
-						if(p.length==1){
+						if (p.length==1) {
 							this.setCursor(p);
-							}else{
-								if(root.find(".concord-node:first").length==1) {
+							} else {
+								if (root.find(".concord-node:first").length==1) {
 									this.setCursor(root.find(".concord-node:first"));
 									} else {
 										this.wipe();
@@ -1701,7 +1703,7 @@ function ConcordOp(root, concordInstance, _cursor) {
 								}
 						}
 				}
-		if(root.find(".concord-node").length == 0) {
+		if (root.find(".concord-node").length == 0) {
 			var node = this.insert("", down);
 			this.setCursor(node);
 			}
@@ -1709,8 +1711,8 @@ function ConcordOp(root, concordInstance, _cursor) {
 		};
 	this.deleteSubs = function() {
 		var node = this.getCursor();
-		if(node.length == 1) {
-			if(node.children("ol").children().length > 0){
+		if (node.length == 1) {
+			if (node.children("ol").children().length > 0) {
 				this.saveState();
 				node.children("ol").empty();
 				}
@@ -1720,7 +1722,7 @@ function ConcordOp(root, concordInstance, _cursor) {
 	this.demote = function() {
 		var node = this.getCursor();
 		var movedSiblings = false;
-		if(node.nextAll().length>0){
+		if (node.nextAll().length>0) {
 			this.saveState();
 			node.nextAll().each(function() {
 				var sibling = $(this).clone(true, true);
@@ -1733,15 +1735,15 @@ function ConcordOp(root, concordInstance, _cursor) {
 			}
 		};
 	this.expand = function(triggerCallbacks) {
-		if(triggerCallbacks == undefined){
+		if (triggerCallbacks == undefined) {
 			triggerCallbacks = true;
 			}
 		var node = this.getCursor();
-		if(node.length == 1) {
-			if(triggerCallbacks){
+		if (node.length == 1) {
+			if (triggerCallbacks) {
 				concordInstance.fireCallback("opExpand", this.setCursorContext(node));
 				}
-			if(!node.hasClass("collapsed")){
+			if (!node.hasClass("collapsed")) {
 				return;
 				}
 			node.removeClass("collapsed");
@@ -1759,13 +1761,13 @@ function ConcordOp(root, concordInstance, _cursor) {
 						}
 					}
 				else {
-					if (( cursorPosition < windowPosition ) || ( (cursorPosition+cursorHeight) > (windowPosition+windowHeight) ) ){
-						if(cursorPosition < windowPosition){
+					if (( cursorPosition < windowPosition ) || ( (cursorPosition+cursorHeight) > (windowPosition+windowHeight) ) ) {
+						if (cursorPosition < windowPosition) {
 							$(window).scrollTop(cursorPosition);
-							}else if ((cursorPosition+cursorHeight) > (windowPosition+windowHeight)){
-								if((cursorHeight+lineHeight) < windowHeight){
+							}else if ((cursorPosition+cursorHeight) > (windowPosition+windowHeight)) {
+								if ((cursorHeight+lineHeight) < windowHeight) {
 									$(window).scrollTop(cursorPosition - (windowHeight-cursorHeight)+lineHeight);
-									}else{
+									} else {
 										$(window).scrollTop(cursorPosition);
 										}
 								}
@@ -1779,44 +1781,44 @@ function ConcordOp(root, concordInstance, _cursor) {
 		};
 	this.expandAllLevels = function() {
 		var node = this.getCursor();
-		if(node.length == 1) {
+		if (node.length == 1) {
 			node.removeClass("collapsed");
 			node.find(".concord-node").removeClass("collapsed");
 			}
 		};
-	this.focusCursor = function(){
+	this.focusCursor = function() {
 		this.getCursor().children(".concord-wrapper").children(".concord-text").focus();
 		};
-	this.blurCursor = function(){
+	this.blurCursor = function() {
 		this.getCursor().children(".concord-wrapper").children(".concord-text").blur();
 		};
 	this.fullCollapse = function() {
 		root.find(".concord-node").each(function() {
-			if($(this).children("ol").children().size() > 0) {
+			if ($(this).children("ol").children().size() > 0) {
 				$(this).addClass("collapsed");
 				}
 			});
 		var cursor = this.getCursor();
 		var topParent = cursor.parents(".concord-node:last");
-		if(topParent.length == 1) {
+		if (topParent.length == 1) {
 			concordInstance.editor.select(topParent);
 			}
 		};
 	this.fullExpand = function() {
 		root.find(".concord-node").removeClass("collapsed");
 		};
-	this.getCursor = function(){
-		if(_cursor){
+	this.getCursor = function() {
+		if (_cursor) {
 			return _cursor;
 			}
 		return root.find(".concord-cursor:first");
 		};
-	this.getCursorRef = function(){
+	this.getCursorRef = function() {
 		return this.setCursorContext(this.getCursor());
 		};
-	this.getHeaders = function(){
+	this.getHeaders = function() {
 		var headers = {};
-		if(root.data("head")){
+		if (root.data("head")) {
 			headers = root.data("head");
 			}
 		headers["title"] = this.getTitle();
@@ -1824,10 +1826,10 @@ function ConcordOp(root, concordInstance, _cursor) {
 		},
 	this.getLineText = function() {
 		var node = this.getCursor();
-		if(node.length == 1) {
+		if (node.length == 1) {
 			var text = node.children(".concord-wrapper:first").children(".concord-text:first").html();
 			var textMatches = text.match(/^(.+)<br>\s*$/);
-			if(textMatches){
+			if (textMatches) {
 				text = textMatches[1];
 				}
 			return concordInstance.editor.unescape(text);
@@ -1835,10 +1837,10 @@ function ConcordOp(root, concordInstance, _cursor) {
 				return null;
 				}
 		};
-	this.getRenderMode = function(){
-		if(root.data("renderMode")!==undefined){
+	this.getRenderMode = function() {
+		if (root.data("renderMode")!==undefined) {
 			return (root.data("renderMode")===true);
-			}else{
+			} else {
 				return true;
 				}
 		};
@@ -1846,11 +1848,11 @@ function ConcordOp(root, concordInstance, _cursor) {
 		return root.data("title");
 		};
 	this.go = function(direction, count, multiple, textMode) {
-		if(count===undefined) {
+		if (count===undefined) {
 			count = 1;
 			}
 		var cursor = this.getCursor();
-		if(textMode==undefined){
+		if (textMode==undefined) {
 			textMode = false;
 			}
 		this.setTextMode(textMode);
@@ -1859,10 +1861,10 @@ function ConcordOp(root, concordInstance, _cursor) {
 			case up:
 				for(var i = 0; i < count; i++) {
 					var prev = cursor.prev();
-					if(prev.length == 1) {
+					if (prev.length == 1) {
 						cursor = prev;
 						ableToMoveInDirection = true;
-						}else{
+						} else {
 							break;
 							}
 					}
@@ -1871,10 +1873,10 @@ function ConcordOp(root, concordInstance, _cursor) {
 			case down:
 				for(var i = 0; i < count; i++) {
 					var next = cursor.next();
-					if(next.length == 1) {
+					if (next.length == 1) {
 						cursor = next;
 						ableToMoveInDirection = true;
-						}else{
+						} else {
 							break;
 							}
 					}
@@ -1883,10 +1885,10 @@ function ConcordOp(root, concordInstance, _cursor) {
 			case left:
 				for(var i = 0; i < count; i++) {
 					var parent = cursor.parents(".concord-node:first");
-					if(parent.length == 1) {
+					if (parent.length == 1) {
 						cursor = parent;
 						ableToMoveInDirection = true;
-						}else{
+						} else {
 							break;
 							}
 					}
@@ -1895,10 +1897,10 @@ function ConcordOp(root, concordInstance, _cursor) {
 			case right:
 				for(var i = 0; i < count; i++) {
 					var firstSibling = cursor.children("ol").children(".concord-node:first");
-					if(firstSibling.length == 1) {
+					if (firstSibling.length == 1) {
 						cursor = firstSibling;
 						ableToMoveInDirection = true;
-						}else{
+						} else {
 							break;
 							}
 					}
@@ -1908,11 +1910,11 @@ function ConcordOp(root, concordInstance, _cursor) {
 				var nodeCount = 0;
 				while(cursor && (nodeCount < count)) {
 					var cursor = this._walk_up(cursor);
-					if(cursor) {
-						if(!cursor.hasClass("collapsed") && (cursor.children("ol").children().size() > 0)) {
+					if (cursor) {
+						if (!cursor.hasClass("collapsed") && (cursor.children("ol").children().size() > 0)) {
 							nodeCount++;
 							ableToMoveInDirection = true;
-							if(nodeCount == count) {
+							if (nodeCount == count) {
 								this.setCursor(cursor, multiple);
 								break;
 							}
@@ -1924,24 +1926,24 @@ function ConcordOp(root, concordInstance, _cursor) {
 				var nodeCount = 0;
 				while(cursor && (nodeCount < count)) {
 					var next = null;
-					if(!cursor.hasClass("collapsed")) {
+					if (!cursor.hasClass("collapsed")) {
 						var outline = cursor.children("ol");
-						if(outline.length == 1) {
+						if (outline.length == 1) {
 							var firstChild = outline.children(".concord-node:first");
-							if(firstChild.length == 1) {
+							if (firstChild.length == 1) {
 								next = firstChild;
 								}
 							}
 						}
-					if(!next) {
+					if (!next) {
 						next = this._walk_down(cursor);
 						}
 					cursor = next;
-					if(cursor) {
-						if(!cursor.hasClass("collapsed") && (cursor.children("ol").children().size() > 0)) {
+					if (cursor) {
+						if (!cursor.hasClass("collapsed") && (cursor.children("ol").children().size() > 0)) {
 							nodeCount++;
 							ableToMoveInDirection = true;
-							if(nodeCount == count) {
+							if (nodeCount == count) {
 								this.setCursor(cursor, multiple);
 								}
 							}
@@ -1957,7 +1959,7 @@ function ConcordOp(root, concordInstance, _cursor) {
 		var level = this.getCursor().parents(".concord-node").length+1;
 		var node = $("<li></li>");
 		node.addClass("concord-node");
-		switch(insertDirection){
+		switch(insertDirection) {
 			case right:
 				level+=1;
 				break;
@@ -1977,7 +1979,7 @@ function ConcordOp(root, concordInstance, _cursor) {
 		text.appendTo(wrapper);
 		wrapper.appendTo(node);
 		outline.appendTo(node);
-		if(insertText && (insertText!="")){
+		if (insertText && (insertText!="")) {
 			if (flInsertRawHtml) { //9/16/20 by DW
 				text.html(insertText);
 				}
@@ -1986,7 +1988,7 @@ function ConcordOp(root, concordInstance, _cursor) {
 				}
 			}
 		var cursor = this.getCursor();
-		if(!insertDirection) {
+		if (!insertDirection) {
 			insertDirection = down;
 			}
 		switch(insertDirection) {
@@ -2002,7 +2004,7 @@ function ConcordOp(root, concordInstance, _cursor) {
 				break;
 			case left:
 				var parent = cursor.parents(".concord-node:first");
-				if(parent.length == 1) {
+				if (parent.length == 1) {
 					parent.after(node);
 					}
 				break;
@@ -2012,14 +2014,14 @@ function ConcordOp(root, concordInstance, _cursor) {
 		concordInstance.fireCallback("opInsert", this.setCursorContext(node));
 		return node;
 		};
-	this.insertImage = function(url){
-		if(this.inTextMode()){
+	this.insertImage = function(url) {
+		if (this.inTextMode()) {
 			document.execCommand("insertImage", null, url);
-			}else{
+			} else {
 				this.insert('<img src="'+url+'">', down);
 				}
 		};
-	this.insertText = function(text){
+	this.insertText = function(text) {
 		var nodes = $("<ol></ol>");
 		var lastLevel = 0;
 		var startingline = 0;
@@ -2031,63 +2033,63 @@ function ConcordOp(root, concordInstance, _cursor) {
 		var workflowy=true;
 		var workflowyParent = null;
 		var firstlinewithcontent = 0;
-		for(var i = 0; i < lines.length; i++){
+		for(var i = 0; i < lines.length; i++) {
 			var line = lines[i];
-			if(!line.match(/^\s*$/)){
+			if (!line.match(/^\s*$/)) {
 				firstlinewithcontent = i;
 				break;
 				}
 			}
-		if(lines.length>(firstlinewithcontent+2)){
-			if((lines[firstlinewithcontent].match(/^([\t\s]*)\-.*$/)==null) && lines[firstlinewithcontent].match(/^.+$/) && (lines[firstlinewithcontent+1]=="")){
+		if (lines.length>(firstlinewithcontent+2)) {
+			if ((lines[firstlinewithcontent].match(/^([\t\s]*)\-.*$/)==null) && lines[firstlinewithcontent].match(/^.+$/) && (lines[firstlinewithcontent+1]=="")) {
 				startingline = firstlinewithcontent+2;
 				var workflowyParent = concordInstance.editor.makeNode();
 				workflowyParent.children(".concord-wrapper").children(".concord-text").html(lines[firstlinewithcontent]);
 				}
 			}
-		for(var i = startingline; i < lines.length; i++){
+		for(var i = startingline; i < lines.length; i++) {
 			var line = lines[i];
-			if((line!="") && !line.match(/^\s+$/) && (line.match(/^([\t\s]*)\-.*$/)==null)){
+			if ((line!="") && !line.match(/^\s+$/) && (line.match(/^([\t\s]*)\-.*$/)==null)) {
 				workflowy=false;
 				break;
 				}
 			}
-		if(!workflowy){
+		if (!workflowy) {
 			startingline = 0;
 			workflowyParent=null;
 			}
-		for(var i = startingline; i < lines.length; i++){
+		for(var i = startingline; i < lines.length; i++) {
 			var line = lines[i];
-			if((line!="") && !line.match(/^\s+$/)){
+			if ((line!="") && !line.match(/^\s+$/)) {
 				var matches = line.match(/^([\t\s]*)(.+)$/);
 				var node = concordInstance.editor.makeNode();
 				var nodeText = concordInstance.editor.escape(matches[2]);
-				if(workflowy){
+				if (workflowy) {
 					var nodeTextMatches = nodeText.match(/^([\t\s]*)\-\s*(.+)$/)
-					if(nodeTextMatches!=null){
+					if (nodeTextMatches!=null) {
 						nodeText = nodeTextMatches[2];
 						}
 					}
 				node.children(".concord-wrapper").children(".concord-text").html(nodeText);
 				var level = startinglevel;
-				if(matches[1]){
-					if(workflowy){
+				if (matches[1]) {
+					if (workflowy) {
 						level = (matches[1].length / 2) + startinglevel;
 						}
 					else {
 						level = matches[1].length + startinglevel;
 						}
-					if(level>lastLevel){
+					if (level>lastLevel) {
 						parents[lastLevel]=lastNode;
 						parent = lastNode;
-						}else if ((level>0) && (level < lastLevel)){
+						}else if ((level>0) && (level < lastLevel)) {
 							parent = parents[level-1];
 							}
 					}
-				if(parent && (level > 0)){
+				if (parent && (level > 0)) {
 					parent.children("ol").append(node);
 					parent.addClass("collapsed");
-					}else{
+					} else {
 						parents = {};
 						nodes.append(node);
 						}
@@ -2095,8 +2097,8 @@ function ConcordOp(root, concordInstance, _cursor) {
 				lastLevel = level;
 				}
 			}
-		if(workflowyParent){
-			if(nodes.children().length > 0){
+		if (workflowyParent) {
+			if (nodes.children().length > 0) {
 				workflowyParent.addClass("collapsed");
 				}
 			var clonedNodes = nodes.clone();
@@ -2104,7 +2106,7 @@ function ConcordOp(root, concordInstance, _cursor) {
 			nodes = $("<ol></ol>");
 			nodes.append(workflowyParent);
 			}
-		if(nodes.children().length>0){
+		if (nodes.children().length>0) {
 			this.saveState();
 			this.setTextMode(false);
 			var cursor = this.getCursor();
@@ -2115,16 +2117,16 @@ function ConcordOp(root, concordInstance, _cursor) {
 			concordInstance.editor.recalculateLevels();
 			}
 		},
-	this.insertXml = function(opmltext,dir){
+	this.insertXml = function(opmltext,dir) {
 		this.saveState();
 		var doc = null;
 		var nodes = $("<ol></ol>");
 		var cursor = this.getCursor();
 		var level = cursor.parents(".concord-node").length+1;
-		if(!dir){
+		if (!dir) {
 			dir = down;
 			}
-		switch(dir){
+		switch(dir) {
 			case right:
 				level+=1;
 				break;
@@ -2132,7 +2134,7 @@ function ConcordOp(root, concordInstance, _cursor) {
 				level-=1;
 				break;
 			}
-		if(typeof opmltext == "string") {
+		if (typeof opmltext == "string") {
 			doc = $($.parseXML(opmltext));
 			} else {
 				doc = $(opmltext);
@@ -2141,11 +2143,11 @@ function ConcordOp(root, concordInstance, _cursor) {
 			nodes.append(concordInstance.editor.build($(this), true, level));
 			});
 		var expansionState = doc.find("expansionState");
-		if(expansionState && expansionState.text() && (expansionState.text()!="")){
+		if (expansionState && expansionState.text() && (expansionState.text()!="")) {
 			var expansionStates = expansionState.text().split(",");
 			var nodeId=1;
-			nodes.find(".concord-node").each(function(){
-				if(expansionStates.indexOf(""+nodeId) >= 0){
+			nodes.find(".concord-node").each(function() {
+				if (expansionStates.indexOf(""+nodeId) >= 0) {
 					$(this).removeClass("collapsed");
 					}
 				nodeId++;
@@ -2164,7 +2166,7 @@ function ConcordOp(root, concordInstance, _cursor) {
 				break;
 			case left:
 				var parent = cursor.parents(".concord-node:first");
-				if(parent.length == 1) {
+				if (parent.length == 1) {
 					nodes.children().insertAfter(parent);
 					}
 				break;
@@ -2172,14 +2174,14 @@ function ConcordOp(root, concordInstance, _cursor) {
 		this.markChanged();
 		return true;
 		};
-	this.inTextMode = function(){
+	this.inTextMode = function() {
 		return root.hasClass("textMode");
 		};
-	this.italic = function(){
+	this.italic = function() {
 		this.saveState();
-		if(this.inTextMode()){
+		if (this.inTextMode()) {
 			document.execCommand("italic");
-			}else{
+			} else {
 				this.focusCursor();
 				document.execCommand("selectAll");
 				document.execCommand("italic");
@@ -2189,23 +2191,23 @@ function ConcordOp(root, concordInstance, _cursor) {
 				}
 		this.markChanged();
 		};
-	this.level = function(){
+	this.level = function() {
 		return this.getCursor().parents(".concord-node").length+1;
 		},
-	this.link = function(url){
-		if(this.inTextMode()){
-			if(!concord.handleEvents){
+	this.link = function(url) {
+		if (this.inTextMode()) {
+			if (!concord.handleEvents) {
 				var instance = this;
-				concord.onResume(function(){
+				concord.onResume(function() {
 					instance.link(url);
 					});
 				return;
 				}
 			var range = concordInstance.editor.getSelection();
-			if(range===undefined){
+			if (range===undefined) {
 				concordInstance.editor.restoreSelection();
 				}
-			if(concordInstance.editor.getSelection()){
+			if (concordInstance.editor.getSelection()) {
 				this.saveState();
 				document.execCommand("createLink", null, url);
 				this.markChanged();
@@ -2214,16 +2216,16 @@ function ConcordOp(root, concordInstance, _cursor) {
 		};
 	this.markChanged = function() {
 		root.data("changed", true);
-		if(!this.inTextMode()){
+		if (!this.inTextMode()) {
 			root.find(".concord-node.dirty").removeClass("dirty");
 			}
 		return true;
 		};
-	this.paste = function(){
-		if(!this.inTextMode()){
-			if(root.data("clipboard")!=null){
+	this.paste = function() {
+		if (!this.inTextMode()) {
+			if (root.data("clipboard")!=null) {
 				var pasteNodes = root.data("clipboard").clone(true,true);
-				if(pasteNodes.length>0){
+				if (pasteNodes.length>0) {
 					this.saveState();
 					root.find(".selected").removeClass("selected");
 					pasteNodes.insertAfter(this.getCursor());
@@ -2235,7 +2237,7 @@ function ConcordOp(root, concordInstance, _cursor) {
 		};
 	this.promote = function() {
 		var node = this.getCursor();
-		if(node.children("ol").children().length > 0){
+		if (node.children("ol").children().length > 0) {
 			this.saveState();
 			node.children("ol").children().reverse().each(function() {
 				var child = $(this).clone(true, true);
@@ -2246,12 +2248,12 @@ function ConcordOp(root, concordInstance, _cursor) {
 			this.markChanged();
 			}
 		};
-	this.redraw = function(){
+	this.redraw = function() {
 		var ct = 1;
 		var cursorIndex = 1;
 		var wasChanged = this.changed();
-		root.find(".concord-node:visible").each(function(){
-			if($(this).hasClass("concord-cursor")){
+		root.find(".concord-node:visible").each(function() {
+			if ($(this).hasClass("concord-cursor")) {
 				cursorIndex=ct;
 				return false;
 				}
@@ -2260,19 +2262,19 @@ function ConcordOp(root, concordInstance, _cursor) {
 		this.xmlToOutline(this.outlineToXml());
 		ct=1;
 		var thisOp = this;
-		root.find(".concord-node:visible").each(function(){
-			if(cursorIndex==ct){
+		root.find(".concord-node:visible").each(function() {
+			if (cursorIndex==ct) {
 				thisOp.setCursor($(this));
 				return false;
 				}
 			ct++;
 			});
-		if(wasChanged){
+		if (wasChanged) {
 			this.markChanged();
 			}
 		};
 	this.reorg = function(direction, count) {
-		if(count===undefined) {
+		if (count===undefined) {
 			count = 1;
 			}
 		var ableToMoveInDirection = false;
@@ -2281,16 +2283,16 @@ function ConcordOp(root, concordInstance, _cursor) {
 		var toMove = this.getCursor();
 		var selected = root.find(".selected");
 		var iteration = 1;
-		if(selected.length>1){
+		if (selected.length>1) {
 			cursor = root.find(".selected:first");
 			toMove = root.find(".selected");
 			}
 		switch(direction) {
 			case up:
 				var prev = cursor.prev();
-				if(prev.length==1) {
-					while(iteration < count){
-						if(prev.prev().length==1){
+				if (prev.length==1) {
+					while(iteration < count) {
+						if (prev.prev().length==1) {
 							prev = prev.prev();
 							}
 						else{
@@ -2306,13 +2308,13 @@ function ConcordOp(root, concordInstance, _cursor) {
 					}
 				break;
 			case down:
-				if(!this.inTextMode()){
+				if (!this.inTextMode()) {
 					cursor = root.find(".selected:last");
 					}
 				var next = cursor.next();
-				if(next.length==1) {
-					while(iteration < count){
-						if(next.next().length==1){
+				if (next.length==1) {
+					while(iteration < count) {
+						if (next.next().length==1) {
 							next = next.next();
 							}
 						else{
@@ -2329,11 +2331,11 @@ function ConcordOp(root, concordInstance, _cursor) {
 				break;
 			case left:
 				var outline = cursor.parent();
-				if(!outline.hasClass("concord-root")) {
+				if (!outline.hasClass("concord-root")) {
 					var parent = outline.parent();
-					while(iteration < count){
+					while(iteration < count) {
 						var parentParent = parent.parents(".concord-node:first");
-						if(parentParent.length==1){
+						if (parentParent.length==1) {
 							parent = parentParent;
 							}
 						else{
@@ -2351,12 +2353,12 @@ function ConcordOp(root, concordInstance, _cursor) {
 				break;
 			case right:
 				var prev = cursor.prev();
-				if(prev.length == 1) {
+				if (prev.length == 1) {
 					this.saveState();
-					while(iteration < count){
-						if(prev.children("ol").length==1){
+					while(iteration < count) {
+						if (prev.children("ol").length==1) {
 							var prevNode = prev.children("ol").children(".concord-node:last");
-							if(prevNode.length==1){
+							if (prevNode.length==1) {
 								prev = prevNode;
 								}
 							else{
@@ -2369,7 +2371,7 @@ function ConcordOp(root, concordInstance, _cursor) {
 						iteration++;
 						}
 					var prevOutline = prev.children("ol");
-					if(prevOutline.length == 0) {
+					if (prevOutline.length == 0) {
 						prevOutline = $("<ol></ol>");
 						prevOutline.appendTo(prev);
 						}
@@ -2382,8 +2384,8 @@ function ConcordOp(root, concordInstance, _cursor) {
 					}
 				break;
 			}
-		if(ableToMoveInDirection){
-			if(this.inTextMode()){
+		if (ableToMoveInDirection) {
+			if (this.inTextMode()) {
 				this.setCursor(this.getCursor());
 				}
 			this.markChanged();
@@ -2392,51 +2394,51 @@ function ConcordOp(root, concordInstance, _cursor) {
 			}
 		return ableToMoveInDirection;
 		};
-	this.runSelection = function(){
+	this.runSelection = function() {
 		var value = eval (this.getLineText());
 		this.deleteSubs();
 		this.insert(value, "right");
 		concordInstance.script.makeComment();
 		this.go("left", 1);
 		};
-	this.saveState = function(){
+	this.saveState = function() {
 		root.data("change", root.children().clone(true, true));
 		root.data("changeTextMode", this.inTextMode());
-		if(this.inTextMode()){
+		if (this.inTextMode()) {
 			var range = concordInstance.editor.getSelection();
-			if( range){
+			if ( range) {
 				root.data("changeRange",range.cloneRange());
-				}else{
+				} else {
 					root.data("changeRange", undefined);
 					}
-			}else{
+			} else {
 				root.data("changeRange", undefined);
 				}
 		return true;
 		};
-	this.setCursor = function(node, multiple, multipleRange){
+	this.setCursor = function(node, multiple, multipleRange) {
 		root.find(".concord-cursor").removeClass("concord-cursor");
 		node.addClass("concord-cursor");
-		if(this.inTextMode()){
+		if (this.inTextMode()) {
 			concordInstance.editor.edit(node);
-			}else{
+			} else {
 				concordInstance.editor.select(node, multiple, multipleRange);
 				concordInstance.pasteBinFocus();
 				}
 		concordInstance.fireCallback("opCursorMoved", this.setCursorContext(node));
 		concordInstance.editor.hideContextMenu();
 		};
-	this.setCursorContext = function(cursor){
+	this.setCursorContext = function(cursor) {
 		return new ConcordOp(root,concordInstance,cursor);
 		};
-	this.setHeaders = function(headers){
+	this.setHeaders = function(headers) {
 		root.data("head", headers);
 		this.markChanged();
 		},
 	this.setLineText = function(text) {
 		this.saveState();
 		var node = this.getCursor();
-		if(node.length == 1) {
+		if (node.length == 1) {
 			node.children(".concord-wrapper:first").children(".concord-text:first").html(concordInstance.editor.escape(text));
 			return true;
 			} else {
@@ -2444,32 +2446,32 @@ function ConcordOp(root, concordInstance, _cursor) {
 				}
 		this.markChanged();
 		};
-	this.setRenderMode = function(mode){
+	this.setRenderMode = function(mode) {
 		root.data("renderMode", mode);
 		this.redraw();
 		return true;
 		};
-	this.setStyle = function(css){
+	this.setStyle = function(css) {
 		root.parent().find("style.customStyle").remove();
 		root.before('<style type="text/css" class="customStyle">'+ css + '</style>');
 		return true;
 		};
-	this.setTextMode = function(textMode){
+	this.setTextMode = function(textMode) {
 		var readonly = concordInstance.prefs()["readonly"];
-		if(readonly==undefined){
+		if (readonly==undefined) {
 			readonly = false;
 			}
-		if(readonly){
+		if (readonly) {
 			return;
 			}
-		if(root.hasClass("textMode") == textMode){
+		if (root.hasClass("textMode") == textMode) {
 			return;
 			}
-		if(textMode==true){
+		if (textMode==true) {
 			root.addClass("textMode");
 			concordInstance.editor.editorMode();
 			concordInstance.editor.edit(this.getCursor());
-			}else{
+			} else {
 				root.removeClass("textMode");
 				root.find(".editing").removeClass("editing");
 				this.blurCursor();
@@ -2480,11 +2482,11 @@ function ConcordOp(root, concordInstance, _cursor) {
 		root.data("title", title);
 		return true;
 		};
-	this.strikethrough = function(){
+	this.strikethrough = function() {
 		this.saveState();
-		if(this.inTextMode()){
+		if (this.inTextMode()) {
 			document.execCommand("strikeThrough");
-			}else{
+			} else {
 				this.focusCursor();
 				document.execCommand("selectAll");
 				document.execCommand("strikeThrough");
@@ -2496,8 +2498,8 @@ function ConcordOp(root, concordInstance, _cursor) {
 		};
 	this.subsExpanded = function() {
 		var node = this.getCursor();
-		if(node.length == 1) {
-			if(!node.hasClass("collapsed") && (node.children("ol").children().size() > 0)) {
+		if (node.length == 1) {
+			if (!node.hasClass("collapsed") && (node.children("ol").children().size() > 0)) {
 				return true;
 				} else {
 					return false;
@@ -2505,7 +2507,7 @@ function ConcordOp(root, concordInstance, _cursor) {
 			}
 		return false;
 		};
-	this.outlineToText = function(){
+	this.outlineToText = function() {
 		var text = "";
 		root.children(".concord-node").each(function() {
 			text+= concordInstance.editor.textLine($(this));
@@ -2545,17 +2547,17 @@ function ConcordOp(root, concordInstance, _cursor) {
 		}
 	this.outlineToXml = function(ownerName, ownerEmail, ownerId) {
 		var head = this.getHeaders();
-		if(ownerName) {
+		if (ownerName) {
 			head["ownerName"] = ownerName;
 			}
-		if(ownerEmail) {
+		if (ownerEmail) {
 			head["ownerEmail"] = ownerEmail;
 			}
-		if(ownerId) {
+		if (ownerId) {
 			head["ownerId"] = ownerId;
 			}
 		var title = this.getTitle();
-		if(!title) {
+		if (!title) {
 			title = "";
 			}
 		head["title"] = title;
@@ -2564,25 +2566,25 @@ function ConcordOp(root, concordInstance, _cursor) {
 		var nodeId = 1;
 		var cursor = root.find(".concord-node:first");
 		do {
-			if(cursor) {
-				if(!cursor.hasClass("collapsed") && (cursor.children("ol").children().size() > 0)) {
+			if (cursor) {
+				if (!cursor.hasClass("collapsed") && (cursor.children("ol").children().size() > 0)) {
 					expansionStates.push(nodeId);
 					}
 				nodeId++;
-				}else{
+				} else {
 					break;
 					}
 			var next = null;
-			if(!cursor.hasClass("collapsed")) {
+			if (!cursor.hasClass("collapsed")) {
 				var outline = cursor.children("ol");
-				if(outline.length == 1) {
+				if (outline.length == 1) {
 					var firstChild = outline.children(".concord-node:first");
-					if(firstChild.length == 1) {
+					if (firstChild.length == 1) {
 						next = firstChild;
 						}
 					}
 				}
-			if(!next) {
+			if (!next) {
 				next = this._walk_down(cursor);
 				}
 			cursor = next;
@@ -2593,8 +2595,8 @@ function ConcordOp(root, concordInstance, _cursor) {
 		
 		var opml = '';
 		var indent=0;
-		var add = function(s){
-			for(var i = 0; i < indent; i++){
+		var add = function(s) {
+			for(var i = 0; i < indent; i++) {
 				opml+='\t';
 				}
 				opml+=s+'\n';
@@ -2604,8 +2606,8 @@ function ConcordOp(root, concordInstance, _cursor) {
 		indent++;
 		add('<head>');
 		indent++;
-		for(var headName in head){
-			if(head[headName]!==undefined){
+		for(var headName in head) {
+			if (head[headName]!==undefined) {
 				add('<'+headName+'>' + ConcordUtil.escapeXml(head[headName]) + '</' + headName + '>');
 				}
 			}
@@ -2621,24 +2623,24 @@ function ConcordOp(root, concordInstance, _cursor) {
 		add('</opml>');
 		return opml;
 		};
-	this.undo = function(){
+	this.undo = function() {
 		var stateBeforeChange = root.children().clone(true, true);
 		var textModeBeforeChange = this.inTextMode();
 		var beforeRange = undefined;
-		if(this.inTextMode()){
+		if (this.inTextMode()) {
 			var range = concordInstance.editor.getSelection();
-			if(range){
+			if (range) {
 				beforeRange = range.cloneRange();
 				}
 			}
-		if(root.data("change")){
+		if (root.data("change")) {
 			root.empty();
 			root.data("change").appendTo(root);
 			this.setTextMode(root.data("changeTextMode"));
-			if(this.inTextMode()){
+			if (this.inTextMode()) {
 				this.focusCursor();
 				var range = root.data("changeRange");
-				if(range){
+				if (range) {
 					concordInstance.editor.restoreSelection(range);
 					}
 				}
@@ -2649,39 +2651,39 @@ function ConcordOp(root, concordInstance, _cursor) {
 			}
 		return false;
 		};
-	this.visitLevel = function(cb){
+	this.visitLevel = function(cb) {
 		var cursor = this.getCursor();
 		var op = this;
-		cursor.children("ol").children().each(function(){
+		cursor.children("ol").children().each(function() {
 			var subCursorContext = op.setCursorContext($(this));
 			cb(subCursorContext);
 			});
 		return true;
 		};
-	this.visitToSummit = function(cb){
+	this.visitToSummit = function(cb) {
 		var cursor = this.getCursor();
-		while(cb(this.setCursorContext(cursor))){
+		while(cb(this.setCursorContext(cursor))) {
 			var parent = cursor.parents(".concord-node:first");
-			if(parent.length==1){
+			if (parent.length==1) {
 				cursor=parent;
-				}else{
+				} else {
 					break;
 					}
 			}
 		return true;
 		};
-	this.visitAll = function(cb){
+	this.visitAll = function(cb) {
 		var op = this;
-		root.find(".concord-node").each(function(){
+		root.find(".concord-node").each(function() {
 			var subCursorContext = op.setCursorContext($(this));
 			var retVal = cb(subCursorContext);
-			if((retVal!==undefined) && (retVal===false)){
+			if ((retVal!==undefined) && (retVal===false)) {
 				return false;
 				}
 			});
 		},
 	this.wipe = function() {
-		if(root.find(".concord-node").length > 0){
+		if (root.find(".concord-node").length > 0) {
 			this.saveState();
 			}
 		root.empty();
@@ -2698,19 +2700,19 @@ function ConcordOp(root, concordInstance, _cursor) {
 			}
 		
 		var doc = null;
-		if(typeof xmlText == "string") {
+		if (typeof xmlText == "string") {
 			doc = $($.parseXML(xmlText));
 			} else {
 				doc = $(xmlText);
 				}
 		root.empty();
 		var title = "";
-		if(doc.find("title:first").length==1){
+		if (doc.find("title:first").length==1) {
 			title = doc.find("title:first").text();
 			}
 		this.setTitle(title);
 		var headers = {};
-		doc.find("head").children().each(function(){
+		doc.find("head").children().each(function() {
 			headers[$(this).prop("tagName")] = $(this).text();
 			});
 		root.data("head", headers);
@@ -2720,30 +2722,30 @@ function ConcordOp(root, concordInstance, _cursor) {
 		root.data("changed", false);
 		root.removeData("previousChange");
 		var expansionState = doc.find("expansionState");
-		if(expansionState && expansionState.text() && (expansionState.text()!="")){
+		if (expansionState && expansionState.text() && (expansionState.text()!="")) {
 			var expansionStates = expansionState.text().split(/\s*,\s*/);
 			var nodeId = 1;
 			var cursor = root.find(".concord-node:first");
 			do {
-				if(cursor) {
-					if(expansionStates.indexOf(""+nodeId) >= 0){
+				if (cursor) {
+					if (expansionStates.indexOf(""+nodeId) >= 0) {
 						cursor.removeClass("collapsed");
 						}
 					nodeId++;
-					}else{
+					} else {
 						break;
 						}
 				var next = null;
-				if(!cursor.hasClass("collapsed")) {
+				if (!cursor.hasClass("collapsed")) {
 					var outline = cursor.children("ol");
-					if(outline.length == 1) {
+					if (outline.length == 1) {
 						var firstChild = outline.children(".concord-node:first");
-						if(firstChild.length == 1) {
+						if (firstChild.length == 1) {
 							next = firstChild;
 							}
 						}
 					}
-				if(!next) {
+				if (!next) {
 					next = this._walk_down(cursor);
 					}
 				cursor = next;
@@ -2789,29 +2791,29 @@ function ConcordOp(root, concordInstance, _cursor) {
 	}
 function ConcordOpAttributes(concordInstance, cursor) {
 	this._cssTextClassName = "cssTextClass";
-	this._cssTextClass = function(newValue){
-		if(newValue===undefined){
+	this._cssTextClass = function(newValue) {
+		if (newValue===undefined) {
 			return;
 			}
 		var newCssClasses = newValue.split(/\s+/);
 		var concordText = cursor.children(".concord-wrapper:first").children(".concord-text:first");
 		var currentCssClass = concordText.attr("class");
-		if(currentCssClass){
+		if (currentCssClass) {
 			var cssClassesArray = currentCssClass.split(/\s+/);
-			for(var i in cssClassesArray){
+			for(var i in cssClassesArray) {
 				var className = cssClassesArray[i];
-				if(className.match(/^concord\-.+$/) == null){
+				if (className.match(/^concord\-.+$/) == null) {
 					concordText.removeClass(className);
 					}
 				}
 			}
-		for(var j in newCssClasses){
+		for(var j in newCssClasses) {
 			var newClass = newCssClasses[j];
 			concordText.addClass(newClass);
 			}
 		};
 	this.addGroup = function(attributes) {
-		if(attributes["type"]){
+		if (attributes["type"]) {
 			cursor.attr("opml-type", attributes["type"]);
 			}
 		else {
@@ -2820,21 +2822,21 @@ function ConcordOpAttributes(concordInstance, cursor) {
 		this._cssTextClass(attributes[this._cssTextClassName]);
 		var finalAttributes = this.getAll();
 		var iconAttribute = "type";
-		if(attributes["icon"]){
+		if (attributes["icon"]) {
 			iconAttribute = "icon";
 			}
-		for(var name in attributes){
+		for(var name in attributes) {
 			finalAttributes[name] = attributes[name];
-			if(name==iconAttribute){
+			if (name==iconAttribute) {
 				var value = attributes[name];
 				var wrapper = cursor.children(".concord-wrapper");
 				var iconName = null;
-				if((name == "type") && concordInstance.prefs() && concordInstance.prefs().typeIcons && concordInstance.prefs().typeIcons[value]){
+				if ((name == "type") && concordInstance.prefs() && concordInstance.prefs().typeIcons && concordInstance.prefs().typeIcons[value]) {
 					iconName = concordInstance.prefs().typeIcons[value];
-					}else if (name=="icon"){
+					}else if (name=="icon") {
 						iconName = value;
 						}
-				if(iconName){
+				if (iconName) {
 					var icon = ConcordUtil.getIconHtml (iconName);
 					wrapper.children(".node-icon:first").replaceWith(icon);
 					}
@@ -2845,7 +2847,7 @@ function ConcordOpAttributes(concordInstance, cursor) {
 		return finalAttributes;
 		};
 	this.setGroup = function(attributes) {
-		if(attributes[this._cssTextClassName]!==undefined){
+		if (attributes[this._cssTextClassName]!==undefined) {
 			this._cssTextClass(attributes[this._cssTextClassName]);
 			}
 		else {
@@ -2855,31 +2857,31 @@ function ConcordOpAttributes(concordInstance, cursor) {
 		var wrapper = cursor.children(".concord-wrapper");
 		$(cursor[0].attributes).each(function() {
 			var matches = this.name.match(/^opml-(.+)$/)
-			if(matches) {
+			if (matches) {
 				var name = matches[1];
-				if(!attributes[name]) {
+				if (!attributes[name]) {
 					cursor.removeAttr(this.name);
 					}
 				}
 			});
 		var iconAttribute = "type";
-		if(attributes["icon"]){
+		if (attributes["icon"]) {
 			iconAttribute = "icon";
 			}
-		if(name=="type"){
+		if (name=="type") {
 			cursor.attr("opml-" + name, attributes[name]);
 			}
 		for(var name in attributes) {
-			if(name==iconAttribute){
+			if (name==iconAttribute) {
 				var value = attributes[name];
 				var wrapper = cursor.children(".concord-wrapper");
 				var iconName = null;
-				if((name == "type") && concordInstance.prefs() && concordInstance.prefs().typeIcons && concordInstance.prefs().typeIcons[value]){
+				if ((name == "type") && concordInstance.prefs() && concordInstance.prefs().typeIcons && concordInstance.prefs().typeIcons[value]) {
 					iconName = concordInstance.prefs().typeIcons[value];
-					}else if (name=="icon"){
+					}else if (name=="icon") {
 						iconName = value;
 						}
-				if(iconName){
+				if (iconName) {
 					var icon = ConcordUtil.getIconHtml (iconName);
 					wrapper.children(".node-icon:first").replaceWith(icon);
 					}
@@ -2889,7 +2891,7 @@ function ConcordOpAttributes(concordInstance, cursor) {
 		return attributes;
 		};
 	this.getAll = function() {
-		if(cursor.data("attributes") !== undefined){
+		if (cursor.data("attributes") !== undefined) {
 			return cursor.data("attributes");
 			}
 		return {};
@@ -2901,8 +2903,8 @@ function ConcordOpAttributes(concordInstance, cursor) {
 		this._cssTextClass("");
 		var numAttributes = 0;
 		var atts = this.getAll();
-		if(atts !== undefined){
-			for(var i in atts){
+		if (atts !== undefined) {
+			for(var i in atts) {
 				numAttributes++;
 				}
 			}
@@ -2911,32 +2913,32 @@ function ConcordOpAttributes(concordInstance, cursor) {
 		var attributes = {};
 		$(cursor[0].attributes).each(function() {
 			var matches = this.name.match(/^opml-(.+)$/)
-			if(matches) {
+			if (matches) {
 				cursor.removeAttr(this.name);
 				}
 			});
-		if(removedAnyAttributes){
+		if (removedAnyAttributes) {
 			concordInstance.op.markChanged();
 			}
 		return removedAnyAttributes;
 		};
 	this.setOne = function(name, value) {
-		if(name==this._cssTextClassName){
+		if (name==this._cssTextClassName) {
 			this._cssTextClass(value);
 			}
 		var atts = this.getAll();
 		atts[name]=value;
 		cursor.data("attributes", atts);
-		if((name=="type" )|| (name=="icon")){
+		if ((name=="type" )|| (name=="icon")) {
 			cursor.attr("opml-" + name, value);
 			var wrapper = cursor.children(".concord-wrapper");
 			var iconName = null;
-			if((name == "type") && concordInstance.prefs() && concordInstance.prefs().typeIcons && concordInstance.prefs().typeIcons[value]){
+			if ((name == "type") && concordInstance.prefs() && concordInstance.prefs().typeIcons && concordInstance.prefs().typeIcons[value]) {
 				iconName = concordInstance.prefs().typeIcons[value];
-				}else if (name=="icon"){
+				}else if (name=="icon") {
 					iconName = value;
 					}
-			if(iconName){
+			if (iconName) {
 				var icon = ConcordUtil.getIconHtml (iconName);
 				wrapper.children(".node-icon:first").replaceWith(icon);
 				}
@@ -2944,16 +2946,16 @@ function ConcordOpAttributes(concordInstance, cursor) {
 		concordInstance.op.markChanged();
 		return true;
 		};
-	this.exists = function(name){
-		if(this.getOne(name) !== undefined){
+	this.exists = function(name) {
+		if (this.getOne(name) !== undefined) {
 			return true;
-			}else{
+			} else {
 				return false;
 				}
 		};
-	this.removeOne = function(name){
-		if(this.getAll()[name]){
-			if(name == this._cssTextClassName){
+	this.removeOne = function(name) {
+		if (this.getAll()[name]) {
+			if (name == this._cssTextClassName) {
 				this._cssTextClass("");
 				}
 			delete this.getAll()[name];
@@ -2963,32 +2965,32 @@ function ConcordOpAttributes(concordInstance, cursor) {
 		return false;
 		};
 	}
-function ConcordScript(root, concordInstance){
-	this.isComment = function(){
-		if(concordInstance.op.attributes.getOne("isComment")!== undefined){
+function ConcordScript(root, concordInstance) {
+	this.isComment = function() {
+		if (concordInstance.op.attributes.getOne("isComment")!== undefined) {
 			return concordInstance.op.attributes.getOne("isComment")=="true";
 			}
 		var parentIsAComment=false;
-		concordInstance.op.getCursor().parents(".concord-node").each(function(){
-			if(concordInstance.op.setCursorContext($(this)).attributes.getOne("isComment") == "true"){
+		concordInstance.op.getCursor().parents(".concord-node").each(function() {
+			if (concordInstance.op.setCursorContext($(this)).attributes.getOne("isComment") == "true") {
 				parentIsAComment = true;
 				return;
 				}
 			});
 		return parentIsAComment;
 		};
-	this.makeComment = function(){
+	this.makeComment = function() {
 		concordInstance.op.attributes.setOne("isComment", "true");
 		concordInstance.op.getCursor().addClass("concord-comment");
 		return true;
 		};
-	this.unComment = function(){
+	this.unComment = function() {
 		concordInstance.op.attributes.setOne("isComment", "false");
 		concordInstance.op.getCursor().removeClass("concord-comment");
 		return true;
 		};
 	}
-function Op(opmltext){
+function Op(opmltext) {
 	var fakeDom = $("<div></div>");
 	fakeDom.concord().op.xmlToOutline(opmltext);
 	return fakeDom.concord().op;
@@ -2998,33 +3000,33 @@ function Op(opmltext){
 		return new ConcordOutline($(this), options);
 		};
 	$(document).on("keydown", function(event) {
-		if(!concord.handleEvents){
+		if (!concord.handleEvents) {
 			return;
 			}
-		if($(event.target).is("input")||$(event.target).is("textarea")){
+		if ($(event.target).is("input")||$(event.target).is("textarea")) {
 			return;
 			}
 		var focusRoot = concord.getFocusRoot();
-		if(focusRoot==null){
+		if (focusRoot==null) {
 			return;
 			}
 		var context = focusRoot;
 		context.data("keydownEvent", event);
 		var concordInstance = new ConcordOutline(context.parent());
 		var readonly = concordInstance.prefs()["readonly"];
-		if(readonly==undefined){
+		if (readonly==undefined) {
 			readonly=false;
 			}
 		// Readonly exceptions for arrow keys and cmd-comma
-		if(readonly){
-			if( (event.which>=37) && (event.which <=40) ){
+		if (readonly) {
+			if ( (event.which>=37) && (event.which <=40) ) {
 				readonly = false;
 				}
-			else if( (event.metaKey || event.ctrlKey) && (event.which==188) ){
+			else if ( (event.metaKey || event.ctrlKey) && (event.which==188) ) {
 				readonly = false;
 				}
 			}
-		if(!readonly){
+		if (!readonly) {
 			var keystrokeString = ConcordUtil.getKeystroke (event);
 			event.concord = { //2/17/20 by DW
 				keystrokeString, 
@@ -3036,18 +3038,18 @@ function Op(opmltext){
 			switch (keystrokeString) {
 				case "backspace":
 					if (concord.mobile) {
-						if((concordInstance.op.getLineText()=="") || (concordInstance.op.getLineText()=="<br>")){
+						if ((concordInstance.op.getLineText()=="") || (concordInstance.op.getLineText()=="<br>")) {
 							event.preventDefault();
 							concordInstance.op.deleteLine();
 							}
 						}
 					else {
-						if(concordInstance.op.inTextMode()) {
-							if(!concordInstance.op.getCursor().hasClass("dirty")){
+						if (concordInstance.op.inTextMode()) {
+							if (!concordInstance.op.getCursor().hasClass("dirty")) {
 								concordInstance.op.saveState();
 								concordInstance.op.getCursor().addClass("dirty");
 								}
-							}else{
+							} else {
 								keyCaptured = true;
 								event.preventDefault();
 								concordInstance.op.deleteLine();
@@ -3080,7 +3082,7 @@ function Op(opmltext){
 					keyCaptured = true;
 					event.preventDefault();
 					event.stopPropagation();
-					if(event.shiftKey) {
+					if (event.shiftKey) {
 						concordInstance.op.reorg(left)
 						} else {
 							concordInstance.op.reorg(right);
@@ -3090,10 +3092,10 @@ function Op(opmltext){
 					keyCaptured = true;
 					event.preventDefault();
 					var cursor = concordInstance.op.getCursor();
-					if(concordInstance.op.inTextMode()){
+					if (concordInstance.op.inTextMode()) {
 						concordInstance.op.focusCursor();
 						document.execCommand('selectAll',false,null);
-						}else{
+						} else {
 							concordInstance.editor.selectionMode();
 							cursor.parent().children().addClass("selected");
 							}
@@ -3129,7 +3131,7 @@ function Op(opmltext){
 					concordInstance.op.demote();
 					break;
 				case "return":
-					if(concord.mobile){
+					if (concord.mobile) {
 						//Mobile
 						event.preventDefault();
 						keyCaptured=true;
@@ -3151,11 +3153,11 @@ function Op(opmltext){
 					else{
 						event.preventDefault();
 						keyCaptured=true;
-						if(event.originalEvent && ((event.originalEvent.keyLocation && (event.originalEvent.keyLocation != 0)) || (event.originalEvent.location && (event.originalEvent.location != 0))) ){
+						if (event.originalEvent && ((event.originalEvent.keyLocation && (event.originalEvent.keyLocation != 0)) || (event.originalEvent.location && (event.originalEvent.location != 0))) ) {
 							concordInstance.op.setTextMode(!concordInstance.op.inTextMode());
-							}else{
+							} else {
 								var direction = down;
-								if(concordInstance.op.subsExpanded()){
+								if (concordInstance.op.subsExpanded()) {
 									direction=right;
 									}
 								var node = concordInstance.op.insert("", direction);
@@ -3197,20 +3199,20 @@ function Op(opmltext){
 					break;
 				case "cursor-left":
 					var active = false;
-					if($(event.target).hasClass("concord-text")) {
-						if(event.target.selectionStart > 0) {
+					if ($(event.target).hasClass("concord-text")) {
+						if (event.target.selectionStart > 0) {
 							active = false;
 							}
 						}
-					if(context.find(".concord-cursor.selected").length == 1) {
+					if (context.find(".concord-cursor.selected").length == 1) {
 						active = true;
 						}
-					if(active) {
+					if (active) {
 						keyCaptured = true;
 						event.preventDefault();
 						var cursor = concordInstance.op.getCursor();
 						var prev = concordInstance.op._walk_up(cursor);
-						if(prev) {
+						if (prev) {
 							concordInstance.op.setCursor(prev);
 							}
 						}
@@ -3218,39 +3220,39 @@ function Op(opmltext){
 				case "cursor-up":
 					keyCaptured = true;
 					event.preventDefault();
-					if(concordInstance.op.inTextMode()){
+					if (concordInstance.op.inTextMode()) {
 						var cursor = concordInstance.op.getCursor();
 						var prev = concordInstance.op._walk_up(cursor);
-						if(prev) {
+						if (prev) {
 							concordInstance.op.setCursor(prev);
 							}
-						}else{
+						} else {
 							concordInstance.op.go(up,1,event.shiftKey, concordInstance.op.inTextMode());
 							}
 					break;
 				case "cursor-right":
 					var active = false;
-					if(context.find(".concord-cursor.selected").length == 1) {
+					if (context.find(".concord-cursor.selected").length == 1) {
 						active = true;
 						}
-					if(active) {
+					if (active) {
 						keyCaptured = true;
 						event.preventDefault();
 						var next = null;
 						var cursor = concordInstance.op.getCursor();
-						if(!cursor.hasClass("collapsed")) {
+						if (!cursor.hasClass("collapsed")) {
 							var outline = cursor.children("ol");
-							if(outline.length == 1) {
+							if (outline.length == 1) {
 								var firstChild = outline.children(".concord-node:first");
-								if(firstChild.length == 1) {
+								if (firstChild.length == 1) {
 									next = firstChild;
 								}
 							}
 						}
-						if(!next) {
+						if (!next) {
 							next = concordInstance.op._walk_down(cursor);
 						}
-						if(next) {
+						if (next) {
 							concordInstance.op.setCursor(next);
 							}
 						}
@@ -3258,35 +3260,35 @@ function Op(opmltext){
 				case "cursor-down":
 					keyCaptured = true;
 					event.preventDefault();
-					if(concordInstance.op.inTextMode()){
+					if (concordInstance.op.inTextMode()) {
 						var next = null;
 						var cursor = concordInstance.op.getCursor();
-						if(!cursor.hasClass("collapsed")) {
+						if (!cursor.hasClass("collapsed")) {
 							var outline = cursor.children("ol");
-							if(outline.length == 1) {
+							if (outline.length == 1) {
 								var firstChild = outline.children(".concord-node:first");
-								if(firstChild.length == 1) {
+								if (firstChild.length == 1) {
 									next = firstChild;
 								}
 							}
 						}
-						if(!next) {
+						if (!next) {
 							next = concordInstance.op._walk_down(cursor);
 						}
-						if(next) {
+						if (next) {
 							concordInstance.op.setCursor(next);
 							}
-						}else{
+						} else {
 							concordInstance.op.go(down,1, event.shiftKey, concordInstance.op.inTextMode());
 							}
 					break;
 				case "delete":
-					if(concordInstance.op.inTextMode()) {
-						if(!concordInstance.op.getCursor().hasClass("dirty")){
+					if (concordInstance.op.inTextMode()) {
+						if (!concordInstance.op.getCursor().hasClass("dirty")) {
 							concordInstance.op.saveState();
 							concordInstance.op.getCursor().addClass("dirty");
 							}
-						}else{
+						} else {
 							keyCaptured = true;
 							event.preventDefault();
 							concordInstance.op.deleteLine();
@@ -3298,8 +3300,8 @@ function Op(opmltext){
 					concordInstance.op.undo();
 					break;
 				case "cut":
-					if(concordInstance.op.inTextMode()){
-						if(concordInstance.op.getLineText()==""){
+					if (concordInstance.op.inTextMode()) {
+						if (concordInstance.op.getLineText()=="") {
 							keyCaptured=true;
 							event.preventDefault();
 							concordInstance.op.deleteLine();
@@ -3310,12 +3312,12 @@ function Op(opmltext){
 						}
 					break;
 				case "copy": //problem!
-					if(false&&commandKey){
-						if(concordInstance.op.inTextMode()){
-							if(concordInstance.op.getLineText()!=""){
+					if (false&&commandKey) {
+						if (concordInstance.op.inTextMode()) {
+							if (concordInstance.op.getLineText()!="") {
 								concordInstance.root.removeData("clipboard");
 								}
-							}else{
+							} else {
 								keyCaptured=true;
 								event.preventDefault();
 								concordInstance.op.copy();
@@ -3325,9 +3327,9 @@ function Op(opmltext){
 				case "paste": //problem!
 					break;
 				case "toggle-comment":
-					if(concordInstance.script.isComment()){
+					if (concordInstance.script.isComment()) {
 						concordInstance.script.unComment();
-						}else{
+						} else {
 							concordInstance.script.makeComment();
 							}
 					break;
@@ -3349,9 +3351,9 @@ function Op(opmltext){
 				case "toggle-expand":
 					keyCaptured=true;
 					event.preventDefault();
-					if(concordInstance.op.subsExpanded()){
+					if (concordInstance.op.subsExpanded()) {
 						concordInstance.op.collapse();
-						}else{
+						} else {
 							concordInstance.op.expand();
 							}
 					break;
@@ -3365,37 +3367,38 @@ function Op(opmltext){
 				default:
 					keyCaptured = false;
 				}
-			if(!keyCaptured) {
-				if((event.which >= 32) && ((event.which < 112) || (event.which > 123)) && (event.which < 1000) && !commandKey) {
-					var node = concordInstance.op.getCursor();
-					if(concordInstance.op.inTextMode()) {
-						if(!node.hasClass("dirty")){
-							concordInstance.op.saveState();
-							}
-						node.addClass("dirty");
-						} else {
-							concordInstance.op.setTextMode(true);
-							concordInstance.op.saveState();
-							concordInstance.editor.edit(node, true);
-							node.addClass("dirty");
-							}
-					concordInstance.op.markChanged();
+			if (!keyCaptured && event.which >= 32 && 
+					(event.which < 112 || event.which > 123) && 
+					event.which < 1000 && !commandKey) {
+				var node = concordInstance.op.getCursor();
+
+				if (concordInstance.op.inTextMode()) {
+					if (!node.hasClass("dirty")) {
+						concordInstance.op.saveState();
 					}
+					node.addClass("dirty");
+				} else {
+					concordInstance.op.setTextMode(true);
+					concordInstance.op.saveState();
+					concordInstance.editor.edit(node, true);
+					node.addClass("dirty");
 				}
+					concordInstance.op.markChanged();
 			}
-		});
+		}
+	});
 	$(document).on("mouseup", function(event) {
-		if(!concord.handleEvents){
+		if (!concord.handleEvents) {
 			return;
 			}
-		if($(".concord-root").length==0){
+		if ($(".concord-root").length==0) {
 			return;
 			}
-		if( $(event.target).is("a") || $(event.target).is("input") || $(event.target).is("textarea") || ($(event.target).parents("a:first").length==1) || $(event.target).hasClass("dropdown-menu") || ($(event.target).parents(".dropdown-menu:first").length>0)){
+		if ( $(event.target).is("a") || $(event.target).is("input") || $(event.target).is("textarea") || ($(event.target).parents("a:first").length==1) || $(event.target).hasClass("dropdown-menu") || ($(event.target).parents(".dropdown-menu:first").length>0)) {
 			return;
 			}
 		var context = $(event.target).parents(".concord-root:first");
-		if(context.length == 0) {
+		if (context.length == 0) {
 			$(".concord-root").each(function() {
 				var concordInstance = new ConcordOutline($(this).parent());
 				concordInstance.editor.hideContextMenu();
@@ -3406,16 +3409,16 @@ function Op(opmltext){
 		});
 	$(document).on("click", concord.updateFocusRootEvent);
 	$(document).on("dblclick", concord.updateFocusRootEvent);
-	$(document).on('show', function(e){
-		if($(e.target).is(".modal")){
-			if($(e.target).attr("concord-events") != "true"){
+	$(document).on('show', function(e) {
+		if ($(e.target).is(".modal")) {
+			if ($(e.target).attr("concord-events") != "true") {
 				concord.stopListening();
 				}
 			}
 		});
-	$(document).on('hidden', function(e){
-		if($(e.target).is(".modal")){
-			if($(e.target).attr("concord-events") != "true"){
+	$(document).on('hidden', function(e) {
+		if ($(e.target).is(".modal")) {
+			if ($(e.target).attr("concord-events") != "true") {
 				concord.resumeListening();
 				}
 			}
