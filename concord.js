@@ -200,6 +200,9 @@ var ConcordUtil = {
 		if (iconName == "markdown") {
 			faClass = "fab";
 			}
+		if (iconName == "rss") { //3/11/22 by DW
+			faClass = "fas";
+			}
 		return ("<i class=\"node-icon " + faClass + " fa-"+ iconName +"\"></i>");
 		},
 	getKeystroke: function (event) { //2/12/20 by DW
@@ -2762,6 +2765,9 @@ function ConcordOp(root, concordInstance, _cursor) {
 					var cursor = this.getCursor (), flCursorMoved = false;
 					for (var i = 1; i <= ix; i++) {
 						var next = null;
+						if (!cursor) { //1/15/24 by DW
+							return;
+							}
 						if (!cursor.hasClass ("collapsed")) {
 							var outline = cursor.children ("ol");
 							if (outline.length == 1) {
