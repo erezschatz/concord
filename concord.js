@@ -909,7 +909,7 @@ function ConcordEditor(root, concordInstance) {
 			child.appendTo(children);
 			});
 		if(collapsed){
-			if(outline.children("outline").size()>0){
+			if(outline.children("outline").length>0){
 				node.addClass("collapsed");
 				}
 			}
@@ -1626,7 +1626,7 @@ function ConcordOp(root, concordInstance, _cursor) {
 	this.countSubs = function() {
 		var node = this.getCursor();
 		if(node.length == 1) {
-			return node.children("ol").children().size();
+			return node.children("ol").children().length;
 			}
 		return 0;
 		};
@@ -1795,7 +1795,7 @@ function ConcordOp(root, concordInstance, _cursor) {
 		};
 	this.fullCollapse = function() {
 		root.find(".concord-node").each(function() {
-			if($(this).children("ol").children().size() > 0) {
+			if($(this).children("ol").children().length > 0) {
 				$(this).addClass("collapsed");
 				}
 			});
@@ -1912,7 +1912,7 @@ function ConcordOp(root, concordInstance, _cursor) {
 				while(cursor && (nodeCount < count)) {
 					var cursor = this._walk_up(cursor);
 					if(cursor) {
-						if(!cursor.hasClass("collapsed") && (cursor.children("ol").children().size() > 0)) {
+						if(!cursor.hasClass("collapsed") && (cursor.children("ol").children().length > 0)) {
 							nodeCount++;
 							ableToMoveInDirection = true;
 							if(nodeCount == count) {
@@ -1941,7 +1941,7 @@ function ConcordOp(root, concordInstance, _cursor) {
 						}
 					cursor = next;
 					if(cursor) {
-						if(!cursor.hasClass("collapsed") && (cursor.children("ol").children().size() > 0)) {
+						if(!cursor.hasClass("collapsed") && (cursor.children("ol").children().length > 0)) {
 							nodeCount++;
 							ableToMoveInDirection = true;
 							if(nodeCount == count) {
@@ -2500,7 +2500,7 @@ function ConcordOp(root, concordInstance, _cursor) {
 	this.subsExpanded = function() {
 		var node = this.getCursor();
 		if(node.length == 1) {
-			if(!node.hasClass("collapsed") && (node.children("ol").children().size() > 0)) {
+			if(!node.hasClass("collapsed") && (node.children("ol").children().length > 0)) {
 				return true;
 				} else {
 					return false;
@@ -2568,7 +2568,7 @@ function ConcordOp(root, concordInstance, _cursor) {
 		var cursor = root.find(".concord-node:first");
 		do {
 			if(cursor) {
-				if(!cursor.hasClass("collapsed") && (cursor.children("ol").children().size() > 0)) {
+				if(!cursor.hasClass("collapsed") && (cursor.children("ol").children().length > 0)) {
 					expansionStates.push(nodeId);
 					}
 				nodeId++;

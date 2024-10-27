@@ -4,7 +4,7 @@
 		<title>Example 2</title>
 		<meta name="copyright" content="Copyright 2013-2014, Small Picture, Inc.">
 		
-		<script src="../libraries/jquery-1.9.1.min.js"></script>  
+		<script src="../libraries/jquery-3.7.1.min.js"></script>  
 		<link href="../libraries/bootstrap.css" rel="stylesheet">
 		<script src="../libraries/bootstrap.min.js"></script>
 		<link rel="stylesheet" href="../libraries/fontAwesome/css/all.css">
@@ -16,8 +16,6 @@
 			var appConsts = {
 				"productname": "reader",
 				"productnameForDisplay": "Reader",
-				"domain": "reader.blorkmark.com",  //change it if you fork
-				"analyticsAccount": "'UA-39531990-1", //change it if you fork
 				"version": "0.16"
 				}
 			var appPrefs = {
@@ -202,7 +200,7 @@
 					dataType: "text",
 					timeout: 30000
 					})
-				.success (function (data, status, xhr) {
+				.done (function (data, status, xhr) {
 					if (xhr.status==200) {
 						if (data != lastOpmltext) {
 							if (appPrefs.flLocked && flOutlineDisplayed) {
@@ -220,7 +218,7 @@
 						flStartedUp = true;
 						}
 					})
-				.error (function (status, textStatus, errorThrown) {
+				.fail (function (status, textStatus, errorThrown) {
 					console.log ("checkOutline: error == " + errorThrown + ", status == " + textStatus);
 					});
 				}
@@ -283,15 +281,6 @@
 				setInterval (function () {backgroundProcess (); }, 1000);
 				}
 			</script>
-		<script> /* google analytics code */
-			(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-			(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-			m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-			})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-			
-			ga('create', appConsts.analyticsAccount, appConsts.domain);
-			ga('send', 'pageview');
-			</script>
 		<style>
 			body {
 				background-color: #fdfdfa;
@@ -304,8 +293,6 @@
 				}
 			.concord-text a, .concord-text a:visited {
 				color: #0088cc;
-				}
-			.divMyOutline {
 				}
 			hr {
 				border-top: 1px solid gainsboro;
