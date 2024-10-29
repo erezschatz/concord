@@ -34,7 +34,6 @@
 		let flUpdateWaiting = false, flOutlineDisplayed = false;
 		const urlReader = "http://reader.smallpicture.com/";
 
-
 		const getURLParameter = name => {
 			return (decodeURI((RegExp(name + '=' + '(.+?)(&|$)').exec(location.search) || [, null])[1]));
 		};
@@ -48,10 +47,10 @@
 		};
 
 		const timeString = (when, flIncludeSeconds) => {
-			let hour = when.getHours(), minutes = when.getMinutes(), ampm = "AM", s;
-			if (hour >= 12) {
-				ampm = "PM";
-			}
+			let hour = when.getHours(); 
+			let minutes = when.getMinutes();
+			const ampm = hour >= 12 ? "PM" : "AM";
+
 			if (hour > 12) {
 				hour -= 12;
 			}
@@ -61,14 +60,15 @@
 			if (minutes < 10) {
 				minutes = "0" + minutes;
 			}
+
+			let s;
 			if (flIncludeSeconds) {
-				const seconds = when.getSeconds();
+				let seconds = when.getSeconds();
 				if (seconds < 10) {
 					seconds = "0" + seconds;
 				}
 				s = hour + ":" + minutes + ":" + seconds + ampm;
-			}
-			else {
+			} else {
 				s = hour + ":" + minutes + ampm;
 			}
 			return (s);
@@ -76,26 +76,24 @@
 
 		const removeRules = () => {
 			$(defaultUtilsOutliner).concord().op.visitAll(function (headline) {
-				const s = headline.getLineText().toLowerCase();
-				const ix = s.indexOf("<rules");
-				if (ix == 0) {
-					$(defaultUtilsOutliner).concord().op.setCursor(headline.getCursor()); //odd, but x.deleteLine operates on the cursor, not x.
+				if (headline.getLineText().toLowerCase().indexOf("<rules") == 0) {
+					$(defaultUtilsOutliner).concord().op.setCursor(headline.getCursor());
 					headline.deleteLine();
 				}
-				return (true); //keep looking
+				return true; //keep looking
 			});
 		};
 
 		const dateToString = when => {
 			when = new Date(when);
-			const daynum = when.getDate();
-			const month = monthToString(when.getMonth());
-			const yearnum = when.getFullYear();
-			return (month + " " + daynum + ", " + yearnum + " at " + timeString(when, true));
+			return monthToString(
+				when.getMonth()) + " " + 
+				when.getDate() + ", " + 
+				when.getFullYear() + " at " + timeString(when, true);
 		};
 
 		const opDeleteLine = () => {
-			return ($(defaultUtilsOutliner).concord().op.deleteLine());
+			return $(defaultUtilsOutliner).concord().op.deleteLine();
 		}
 
 		const opMakeFirstAtLevel = () => {
@@ -106,16 +104,17 @@
 			}
 		};
 
-		function updateOutline(opmltext) {
-			let title, lt;
+		const updateOutline = opmltext => {
 			document.getElementById("idTopLine").style.visibility = "visible";
 			document.getElementById("idBottomLine").style.visibility = "visible";
 			$("#outliner").concord().op.xmlToOutline(opmltext);
+
 			if (flProfile) { //5/14/13 by DW
 				opFirstSummit();
+				let lt;
 				while (true) {
 					lt = opGetLineText().toLowerCase();
-					if ((lt == "profile") || (lt == "#profile")) {
+					if (lt == "profile" || lt == "#profile") {
 						opReorg(up, infinity);
 						opReorg(up, 1); //workaround bug in opReorg -- 5/16/13 by DW
 						if (opGo(down, 1)) {
@@ -131,7 +130,8 @@
 					}
 				}
 			}
-			title = $("#outliner").concord().op.getTitle();
+
+			const title = $("#outliner").concord().op.getTitle();
 			document.title = title; //4/22/13 by DW
 			opmlHeadElements = $("#outliner").concord().op.getHeaders();
 			document.getElementById("idTitle").innerHTML = (opmlHeadElements.longTitle != undefined) ? opmlHeadElements.longTitle : title; //5/10/13 by DW
@@ -143,8 +143,9 @@
 			document.getElementById("idTwitterIntentLink").href = "http://twitter.com/intent/tweet?url=" + urlReader + "?opmlurl=" + opmlurl + "&text=" + title + ". ";
 			removeRules(); //8/23/13 by DW
 			flOutlineDisplayed = true;
-		}
-		function updateLockedIcon() {
+		};
+
+		const updateLockedIcon = () => {
 			const iconname = (appPrefs.flLocked) ? "lock" : "unlock";
 			const waitingstyle = " style='color: green;'";
 			const style = (flUpdateWaiting) ? waitingstyle : "";
@@ -153,38 +154,44 @@
 
 			const tip = (appPrefs.flLocked) ? "Unlock to allow updates." : "Lock the outline while you're reading.";
 			document.getElementById("idLinkToLockIcon").title = tip;
-		}
-		function toggleLocked() {
+		};
+
+		const toggleLocked = () => {
 			appPrefs.flLocked = !appPrefs.flLocked;
 			if ((!appPrefs.flLocked) && flUpdateWaiting) {
 				updateOutline(lastOpmltext);
 				flUpdateWaiting = false;
 			}
 			updateLockedIcon();
-		}
-		function getOpmlHeadElements() {
+		};
+
+		const getOpmlHeadElements = () => {
 			const headers = {};
 			$("#outliner").concord().root.data("head").children().each(function () {
 				headers[$(this).prop("tagName")] = $(this).text();
 			});
 			return headers;
-		}
-		function opCursorMovedCallback(op) {
+		};
+
+		const opCursorMovedCallback = (op) => {
 			whenLastUserEvent = new Date();
 			console.log("opCursorMovedCallback");
-		}
-		function opExpandCallback(parent) {
+		};
+
+		const opExpandCallback = (parent) => {
 			const type = parent.attributes.getOne("type"), url = parent.attributes.getOne("url"), xmlUrl = parent.attributes.getOne("xmlUrl");
 			//link nodes
-			if ((type == "link") && (url != undefined)) {
+			if (type == "link" && url != undefined) {
 				window.open(url);
 				return;
 			}
+
 			//rss nodes
-			if ((type == "rss") && (xmlUrl != undefined)) {
+			if (type == "rss" && xmlUrl != undefined) {
 				window.open(xmlUrl);
 				return;
 			}
+
 			//include nodes
 			if ((type == "include") && (url != undefined)) {
 				parent.deleteSubs();
@@ -194,41 +201,42 @@
 					op.clearChanged();
 				}, parent, true);
 			}
-		}
-		function opKeystrokeCallback(event) {
+		};
+
+		const opKeystrokeCallback = (event) => {
 			whenLastUserEvent = new Date();
 			console.log("opKeystrokeCallback");
-		}
-		function checkOutline(opmlUrl) {
+		};
+
+		const checkOutline = (opmlUrl) => {
 			whenLastCheckOutline = new Date();
 			const jxhr = $.ajax({
 				url: opmlUrl,
 				dataType: "text",
 				timeout: 30000
-			})
-				.done(function (data, status, xhr) {
-					if (xhr.status == 200) {
-						if (data != lastOpmltext) {
-							if (appPrefs.flLocked && flOutlineDisplayed) {
-								flUpdateWaiting = true;
-								updateLockedIcon();
-								console.log("checkOutline: Update waiting because outline is locked.");
-							}
-							else {
-								updateOutline(data);
-								console.log("checkOutline: Outline updated.");
-							}
-							lastOpmltext = data;
-							ctOutlineUpdates++;
+			}).done(function (data, status, xhr) {
+				if (xhr.status == 200) {
+					if (data != lastOpmltext) {
+						if (appPrefs.flLocked && flOutlineDisplayed) {
+							flUpdateWaiting = true;
+							updateLockedIcon();
+							console.log("checkOutline: Update waiting because outline is locked.");
 						}
-						flStartedUp = true;
+						else {
+							updateOutline(data);
+							console.log("checkOutline: Outline updated.");
+						}
+						lastOpmltext = data;
+						ctOutlineUpdates++;
 					}
-				})
-				.fail(function (status, textStatus, errorThrown) {
-					console.log("checkOutline: error == " + errorThrown + ", status == " + textStatus);
-				});
-		}
-		function setPrefs() {
+					flStartedUp = true;
+				}
+			}).fail(function (status, textStatus, errorThrown) {
+				console.log("checkOutline: error == " + errorThrown + ", status == " + textStatus);
+			});
+		};
+
+		const setPrefs = () => {
 			$("#outliner").concord({
 				"prefs": {
 					"outlineFont": font,
@@ -244,19 +252,22 @@
 					"opKeystroke": opKeystrokeCallback
 				}
 			});
-		}
-		function setTitleStyle() {
+		};
+
+		const setTitleStyle = () => {
 			const title = document.getElementById("idTitle");
 			title.style.fontFamily = titleFont;
 			title.style.fontSize = titleFontSize;
-		}
-		function backgroundProcess() {
+		};
+
+		const backgroundProcess = () => {
 			if (secondsSince(whenLastCheckOutline) >= secsBetwOutlineChecks) {
 				checkOutline(opmlurl);
 				ctOutlineChecks++;
 			}
-		}
-		function startup() {
+		};
+
+		const startup = () => {
 			const urlparam = getURLParameter("opmlurl");
 			if (urlparam != "null") {
 				opmlurl = decodeURIComponent(urlparam);
@@ -346,11 +357,12 @@
 		<div style="margin-top: 40px;">
 			<center>
 				<div class="divIcon"><a href="http://fargo.io/" target="_blank"
-						title="Use Fargo to create your own outlines."><i class="icon-home"></i></a></div>
+						title="Use Fargo to create your own outlines.">
+						<i class="icon-home"></i></a></div>
 				<div class="divIcon"><a id="idTwitterIntentLink" target="_blank"
 						title="Tweet a link to this outline."><i class="icon-twitter"></i></a></div>
-				<div class="divIcon"><a href="#" id="idLinkToLockIcon" onclick="toggleLocked ();"><span
-							id="idLockIcon"></span></a></div>
+				<div class="divIcon"><a href="#" id="idLinkToLockIcon" onclick="toggleLocked ();">
+					<span id="idLockIcon"></span></a></div>
 			</center>
 		</div>
 	</aside>

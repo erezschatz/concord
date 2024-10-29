@@ -28,210 +28,266 @@ const initialOpmltext =
 const defaultUtilsOutliner = "#outliner";
 
 //op glue routines
-function opUndo() {
+const opUndo = () => {
 	return ($(defaultUtilsOutliner).concord().op.undo())
 };
 
-function opCut() {
+const opCut = () => {
 	return ($(defaultUtilsOutliner).concord().op.cut())
-}
-function opCopy() {
+};
+
+const opCopy = () => {
 	return ($(defaultUtilsOutliner).concord().op.copy())
-}
-function opPaste() {
+};
+
+const opPaste = () => {
 	return ($(defaultUtilsOutliner).concord().op.paste())
-}
-function opReorg(dir, count) {
+};
+
+const opReorg = (dir, count) => {
 	return ($(defaultUtilsOutliner).concord().op.reorg(dir, count));
-}
-function opSetFont(font, fontsize, lineheight) {
-	$(defaultUtilsOutliner).concord().prefs({ "outlineFont": font, "outlineFontSize": fontsize, "outlineLineHeight": lineheight });
-}
-function opPromote() {
+};
+
+const opSetFont = (font, fontsize, lineheight) => {
+	$(defaultUtilsOutliner).concord().prefs(
+		{
+			"outlineFont": font,
+			"outlineFontSize": fontsize,
+			"outlineLineHeight": lineheight
+		});
+};
+
+const opPromote = () => {
 	$(defaultUtilsOutliner).concord().op.promote();
-}
-function opDemote() {
+};
+
+const opDemote = () => {
 	$(defaultUtilsOutliner).concord().op.demote();
-}
-function opBold() {
+};
+
+const opBold = () => {
 	return ($(defaultUtilsOutliner).concord().op.bold());
-}
-function opItalic() {
+};
+
+const opItalic = () => {
 	return ($(defaultUtilsOutliner).concord().op.italic());
-}
-function opLink(url) {
+};
+
+const opLink = (url) => {
 	return ($(defaultUtilsOutliner).concord().op.link(url));
-}
-function opSetTextMode(fltextmode) {
+};
+
+const opSetTextMode = (fltextmode) => {
 	$(defaultUtilsOutliner).concord().op.setTextMode(fltextmode);
-}
-function opInTextMode() {
+};
+
+const opInTextMode = () => {
 	return ($(defaultUtilsOutliner).concord().op.inTextMode());
-}
-function opGetAtts() {
+};
+
+const opGetAtts = () => {
 	return $(defaultUtilsOutliner).concord().op.attributes.getAll();
-}
-function opGetOneAtt(name) {
+};
+
+const opGetOneAtt = (name) => {
 	return $(defaultUtilsOutliner).concord().op.attributes.getOne(name);
-}
-function opHasAtt(name) {
+};
+
+const opHasAtt = (name) => {
 	return (opGetOneAtt(name) != undefined);
-}
-function opSetOneAtt(name, value) {
+};
+
+const opSetOneAtt = (name, value) => {
 	return $(defaultUtilsOutliner).concord().op.attributes.setOne(name, value);
-}
-function opSetAtts(atts) {
+};
+
+const opSetAtts = (atts) => {
 	return $(defaultUtilsOutliner).concord().op.attributes.setGroup(atts);
-}
-function opAddAtts(atts) {
+};
+
+const opAddAtts = (atts) => {
 	return $(defaultUtilsOutliner).concord().op.attributes.addGroup(atts);
-}
-function opSetStyle(css) {
+};
+
+const opSetStyle = (css) => {
 	return $(defaultUtilsOutliner).concord().op.setStyle(css);
-}
-function opGetLineText() {
+};
+
+const opGetLineText = () => {
 	return ($(defaultUtilsOutliner).concord().op.getLineText());
-}
-function opExpand() {
+};
+
+const opExpand = () => {
 	return ($(defaultUtilsOutliner).concord().op.expand());
-}
-function opExpandAllLevels() {
+};
+
+const opExpandAllLevels = () => {
 	return ($(defaultUtilsOutliner).concord().op.expandAllLevels());
-}
-function opExpandEverything() {
+};
+
+const opExpandEverything = () => {
 	return ($(defaultUtilsOutliner).concord().op.fullExpand());
-}
-function opCollapse() {
+};
+
+const opCollapse = () => {
 	return ($(defaultUtilsOutliner).concord().op.collapse());
-}
-function opIsComment() {
+};
+
+const opIsComment = () => {
 	return ($(defaultUtilsOutliner).concord().script.isComment());
-}
-function opMakeComment() {
+};
+
+const opMakeComment = () => {
 	return ($(defaultUtilsOutliner).concord().script.makeComment());
-}
-function opUnComment() {
+};
+
+const opUnComment = () => {
 	return ($(defaultUtilsOutliner).concord().script.unComment());
-}
-function opToggleComment() {
+};
+
+const opToggleComment = () => {
 	if (opIsComment()) {
 		opUnComment();
-	}
-	else {
+	} else {
 		opMakeComment();
 	}
-}
-function opCollapseEverything() {
+};
+
+const opCollapseEverything = () => {
 	return ($(defaultUtilsOutliner).concord().op.fullCollapse());
-}
-function opInsert(s, dir) {
+};
+
+const opInsert = (s, dir) => {
 	return ($(defaultUtilsOutliner).concord().op.insert(s, dir));
-}
-function opInsertImage(url) {
+};
+
+const opInsertImage = (url) => {
 	return ($(defaultUtilsOutliner).concord().op.insertImage(url));
-}
-function opSetLineText(s) {
-	return ($(defaultUtilsOutliner).concord().op.setLineText(s));
-}
-function opDeleteSubs() {
-	return ($(defaultUtilsOutliner).concord().op.deleteSubs());
-}
-function opCountSubs() {
-	return ($(defaultUtilsOutliner).concord().op.countSubs());
-}
-function opHasSubs() {
-	return (opCountSubs() > 0);
-}
-function opSubsExpanded() {
-	return ($(defaultUtilsOutliner).concord().op.subsExpanded());
-}
-function opGo(dir, ct) {
-	return ($(defaultUtilsOutliner).concord().op.go(dir, ct));
-}
-function opFirstSummit() {
+};
+
+const opSetLineText = (s) => {
+	return $(defaultUtilsOutliner).concord().op.setLineText(s);
+};
+
+const opDeleteSubs = () => {
+	return $(defaultUtilsOutliner).concord().op.deleteSubs();
+};
+
+const opCountSubs = () => {
+	return $(defaultUtilsOutliner).concord().op.countSubs();
+};
+
+const opHasSubs = () => {
+	return opCountSubs() > 0;
+};
+
+const opSubsExpanded = () => {
+	return $(defaultUtilsOutliner).concord().op.subsExpanded();
+};
+
+const opGo = (dir, ct) => {
+	return $(defaultUtilsOutliner).concord().op.go(dir, ct);
+};
+
+const opFirstSummit = () => {
 	opGo(left, 32767);
 	opGo(up, 32767);
-}
-function opXmlToOutline(xmltext) {
+};
+
+const opXmlToOutline = (xmltext) => {
 	return ($(defaultUtilsOutliner).concord().op.xmlToOutline(xmltext));
-}
-function opInsertXml(xmltext, dir) {
+};
+
+const opInsertXml = (xmltext, dir) => {
 	return ($(defaultUtilsOutliner).concord().op.insertXml(xmltext, dir));
-}
-function opOutlineToXml(ownerName, ownerEmail, ownerId) {
+};
+
+const opOutlineToXml = (ownerName, ownerEmail, ownerId) => {
 	return ($(defaultUtilsOutliner).concord().op.outlineToXml(ownerName, ownerEmail, ownerId));
-}
-function opCursorToXml() {
+};
+
+const opCursorToXml = () => {
 	return ($(defaultUtilsOutliner).concord().op.cursorToXml());
-}
-function opSetTitle(title) {
+};
+
+const opSetTitle = (title) => {
 	return ($(defaultUtilsOutliner).concord().op.setTitle(title));
-}
-function opGetTitle() {
+};
+
+const opGetTitle = () => {
 	return ($(defaultUtilsOutliner).concord().op.getTitle());
-}
-function opHasChanged() {
+};
+
+const opHasChanged = () => {
 	return ($(defaultUtilsOutliner).concord().op.changed());
-}
-function opClearChanged() {
+};
+
+const opClearChanged = () => {
 	return ($(defaultUtilsOutliner).concord().op.clearChanged());
-}
-function opMarkChanged() {
+};
+
+const opMarkChanged = () => {
 	return ($(defaultUtilsOutliner).concord().op.markChanged());
-}
-function opRedraw() {
+};
+
+const opRedraw = () => {
 	return ($(defaultUtilsOutliner).concord().op.redraw());
-}
-function opVisitAll(callback) { //9/13/13 by DW
+};
+
+const opVisitAll = (callback) => {
 	return ($(defaultUtilsOutliner).concord().op.visitAll(callback));
-}
-function opWipe() { //9/14/13 by DW
+};
+
+const opWipe = () => {
 	return ($(defaultUtilsOutliner).concord().op.wipe());
-}
+};
+
 //readText
 const readHttpUrl = "http://httpproxy.scripting.com/httpReadUrl";
 
-function readText(url, callback, op, flAcceptOpml) {
+const readText = (url, callback, op, flAcceptOpml) => {
 	let headerval = {};
 	if ((flAcceptOpml != undefined) && flAcceptOpml) { //5/14/13 by DW
 		headerval = { "Accept": "text/x-opml" };
 	}
+
 	$.ajax({
 		url: readHttpUrl + "?url=" + encodeURIComponent(url) + "&type=" + encodeURIComponent("text/plain"),
 		dataType: "text",
 		headers: headerval,
 		timeout: 30000
-	})
-	.done(function (data, status) {
+	}).done(function (data, status) {
 		callback(data, op);
-	})
-	.fail(function (status) {
+	}).fail(function (status) {
 		httpReadStatus = status;
 	});
 };
 
 //string routines
-function filledString(s, ct) {
-	const theString = "";
-	for (const i = 0; i < ct; i++) {
+const filledString = (s, ct) => {
+	let theString = "";
+	for (let i = 0; i < ct; i++) {
 		theString += s;
 	}
 	return theString;
-}
+};
 
-function multipleReplaceAll(s, adrTable, flCaseSensitive, startCharacters, endCharacters) {
+const multipleReplaceAll = (s, adrTable, flCaseSensitive, startCharacters, endCharacters) => {
 	if (flCaseSensitive === undefined) {
 		flCaseSensitive = false;
 	}
+
 	if (startCharacters === undefined) {
 		startCharacters = "";
 	}
+
 	if (endCharacters === undefined) {
 		endCharacters = "";
 	}
+
 	for (const item in adrTable) {
 		const replacementValue = adrTable[item];
-		const regularExpressionModifier = "g";
+		let regularExpressionModifier = "g";
 		if (!flCaseSensitive) {
 			regularExpressionModifier = "gi";
 		}
@@ -239,10 +295,11 @@ function multipleReplaceAll(s, adrTable, flCaseSensitive, startCharacters, endCh
 		const regularExpression = new RegExp(regularExpressionString, regularExpressionModifier);
 		s = s.replace(regularExpression, replacementValue);
 	}
+
 	return s;
 };
 
 //misc
-function secondsSince(when) {
+const secondsSince = (when) => {
 	return ((new Date()) - when) / 1000;
-}
+};
